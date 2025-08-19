@@ -2,9 +2,9 @@
   // ======= CONFIG =======
   const CONFIG = {
     EVENTS_URL: 'events.json',
-    EVENTS_PER_PAGE: 5,            // show 5 at a time
-    MAX_EVENTS: 20,                // total cap of 20
-    PAGE_DURATION_MS: 12_000,      // 12 seconds per page
+    EVENTS_PER_PAGE: 5,            // show 5 at a time (your current choice)
+    MAX_EVENTS: 20,                // total cap
+    PAGE_DURATION_MS: 12_000,      // 12 seconds per page (your current choice)
     REFRESH_EVERY_MINUTES: 60,     // reload data hourly
     HARD_RELOAD_AT_MIDNIGHT: true, // full reload after midnight
     TIMEZONE: Intl.DateTimeFormat().resolvedOptions().timeZone || 'America/Chicago'
@@ -17,7 +17,6 @@
   const $pages = () => document.getElementById('pages');
   const $status = () => document.getElementById('status');
 
-  // cache-busting query param each fetch
   const withCacheBust = (url) => {
     const u = new URL(url, location.href);
     u.searchParams.set('_', String(Date.now()));
@@ -34,7 +33,6 @@
     let start = parseDateSafe(e.start);
     let end = parseDateSafe(e.end);
 
-    // Build start from legacy date/time if needed
     if (!start && e.date) {
       let startTimeStr = null;
       if (e.time && typeof e.time === 'string') {
@@ -45,7 +43,6 @@
       start = parseDateSafe(base);
     }
 
-    // Default end to +2 hours if missing
     if (!end && start) {
       end = new Date(start.getTime() + 2 * 60 * 60 * 1000);
     }
@@ -154,9 +151,7 @@
   function updateActivePage() {
     const pageEls = Array.from(document.querySelectorAll('.page'));
     pageEls.forEach((el, i) => el.classList.toggle('active', i === currentPage));
-
-    // After activating a page, auto-fit it to prevent clipping
-    fitActivePage();
+    fitActivePage(); // ensure it fits
   }
 
   function startRotation() {
@@ -175,21 +170,39 @@
     }
   }
 
-  // Auto-fit: shrink fonts/margins if content would overflow the 960x1080 container
+  // Auto-fit: step down text sizes, then scale the whole page as a last resort
   function fitActivePage() {
     const active = document.querySelector('.page.active');
     if (!active) return;
 
-    // reset fit classes then measure
-    active.classList.remove('tight', 'tighter');
+    // reset fit classes and any existing transform before measuring
+    active.classList.remove('tight', 'tighter', 'scaled');
+    active.style.transform = '';
+    active.style.width = ''; // reset any width compensation
 
     const fits = () => active.scrollHeight <= active.clientHeight;
 
-    if (!fits()) {
-      active.classList.add('tight');
-      if (!fits()) {
-        active.classList.add('tighter');
-      }
+    // Step 1: default
+    if (fits()) return;
+
+    // Step 2: tight
+    active.classList.add('tight');
+    if (fits()) return;
+
+    // Step 3: tighter
+    active.classList.add('tighter');
+    if (fits()) return;
+
+    // Step 4: scale the entire page to fit
+    const h = active.scrollHeight;
+    const H = active.clientHeight; // container height
+    if (h > 0 && H > 0) {
+      const scale = Math.min(1, Math.max(0.7, H / h)); // don’t shrink below 70%
+      active.classList.add('scaled');
+      active.style.transform = `scale(${scale})`;
+      // When scaling down, widen the page so the scaled content re-fills the width
+      // (prevents looking too narrow). Compensate width by 1/scale.
+      active.style.width = `${(1/scale) * 100}%`;
     }
   }
 
@@ -211,7 +224,9 @@
     } catch (err) {
       console.error('Load error:', err);
       setStatus('Failed to load events.');
-      $pages().innerHTML = `<div class="page active"><div class="event"><div class="event-title">No upcoming events found.</div></div></div>`;
+      $pages().innerHTML =
+        `<div class="page active"><div class="event"><div class="event-title">No upcoming events found.</div></div></div>`;
+    } finally {
       fitActivePage();
     }
   }
@@ -246,5 +261,7 @@
     await loadAndRender();
     scheduleHourlyRefresh();
     scheduleMidnightReload();
+    // Re-fit on resize just in case the player/browser scales
+    window.addEventListener('resize', fitActivePage);
   });
 })();
