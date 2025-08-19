@@ -1,14 +1,14 @@
 :root{
-  --container-w: 1080px;  /* width */
-  --container-h: 960px;   /* height */
+  --container-w: 960px;   /* width */
+  --container-h: 1080px;  /* height */
   --bg: #ffffff;
   --ink: #1b1b1b;
   --rule: #d9d9d9;
   --title-size: 24px;
   --meta-size: 18px;
-  --pad: 24px;
+  --pad: 20px;            /* slightly tighter */
   --line: 1px;
-  --fade-ms: 800ms;
+  --fade-ms: 600ms;
 }
 
 * { box-sizing: border-box; }
@@ -24,7 +24,7 @@ html, body {
   width: var(--container-w);
   height: var(--container-h);
   margin: 0 auto;
-  overflow: hidden;
+  overflow: hidden;       /* keep strictly contained */
   background: var(--bg);
   position: relative;
 }
@@ -43,30 +43,21 @@ html, body {
   padding: var(--pad);
 }
 
-/* Active page: distribute items top-to-bottom with minimal top gap */
+/* Active page: stack from top with a modest, consistent gap */
 .page.active{
   display: flex;
   flex-direction: column;
-  justify-content: space-between;   /* first at top, last at bottom */
+  justify-content: flex-start;  /* top-aligned */
   align-items: stretch;
-  padding-top: 8px;                 /* small breathing room */
-  padding-bottom: 8px;
+  gap: 10px;                    /* even spacing without pushing off-screen */
   animation: fadeIn var(--fade-ms) ease-in-out;
-}
-
-/* If a page has fewer than EVENTS_PER_PAGE items, top-align it */
-.page.active.compact{
-  justify-content: flex-start;      /* stack from the top */
-}
-.page.active.compact .event{
-  margin-bottom: 10px;              /* natural spacing in compact mode */
 }
 
 /* Each event block */
 .event{
   width: 100%;
   max-width: 100%;
-  padding: 12px 16px 16px;          /* L/R padding to keep text off edges */
+  padding: 10px 14px 12px;      /* L/R padding to keep text off edges */
   border-bottom: var(--line) solid var(--rule);
 
   /* robust wrapping to avoid cut-offs */
@@ -92,7 +83,7 @@ html, body {
   font-size: var(--meta-size);
   margin: 2px 0;
   color: #444;
-  padding-left: 16px;               /* slight indent under the title */
+  padding-left: 14px;          /* slight indent under the title */
   overflow-wrap: break-word;
   word-break: break-word;
   hyphens: auto;
