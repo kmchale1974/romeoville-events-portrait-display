@@ -6,7 +6,7 @@
   --rule: #d9d9d9;
   --title-size: 24px;
   --meta-size: 18px;
-  --pad: 20px;            /* slightly tighter */
+  --pad: 20px;
   --line: 1px;
   --fade-ms: 600ms;
 }
@@ -24,7 +24,7 @@ html, body {
   width: var(--container-w);
   height: var(--container-h);
   margin: 0 auto;
-  overflow: hidden;       /* strictly contained; JS auto-fits to avoid clipping */
+  overflow: hidden;  /* keep strictly contained */
   background: var(--bg);
   position: relative;
 }
@@ -41,6 +41,8 @@ html, body {
   position: absolute;
   inset: 0;
   padding: var(--pad);
+  /* NEW: let transforms scale content without blurring text too much */
+  transform-origin: top left;       /* ensure scale fits from top-left */
 }
 
 /* Active page: top-aligned with consistent gap */
@@ -49,18 +51,21 @@ html, body {
   flex-direction: column;
   justify-content: flex-start;
   align-items: stretch;
-  gap: 10px;                    /* even spacing */
+  gap: 10px;
   animation: fadeIn var(--fade-ms) ease-in-out;
 }
+
+/* NEW: allow flex children to actually shrink in columns (prevents side clipping) */
+.page.active > * { min-width: 0; }
 
 /* Each event block */
 .event{
   width: 100%;
   max-width: 100%;
-  padding: 10px 14px 12px;      /* L/R padding to keep text off edges */
+  padding: 10px 14px 12px;
   border-bottom: var(--line) solid var(--rule);
 
-  /* robust wrapping to avoid cut-offs on long strings/URLs */
+  /* strongest wrapping to avoid cut-offs */
   overflow-wrap: anywhere;
   word-wrap: break-word;
   word-break: break-word;
@@ -68,9 +73,7 @@ html, body {
   white-space: normal;
 }
 
-.event:last-child{
-  border-bottom: none;
-}
+.event:last-child{ border-bottom: none; }
 
 .event-title{
   font-weight: 700;
@@ -86,14 +89,14 @@ html, body {
   font-size: var(--meta-size);
   margin: 2px 0;
   color: #444;
-  padding-left: 14px;          /* slight indent under the title */
+  padding-left: 14px;
   overflow-wrap: anywhere;
   word-break: break-word;
   hyphens: auto;
   white-space: normal;
 }
 
-/* ---------- Auto-fit classes (applied by JS if needed) ---------- */
+/* ---------- Auto-fit classes (stepped) ---------- */
 .page.active.tight .event-title{ font-size: 22px; }
 .page.active.tight .event-detail{ font-size: 17px; }
 .page.active.tight{ gap: 8px; }
@@ -104,7 +107,12 @@ html, body {
 .page.active.tighter{ gap: 6px; }
 .page.active.tighter .event{ padding: 6px 10px 8px; }
 
-/* --------------------------------------------------------------- */
+/* NEW: when scaling is needed beyond tighter */
+.page.active.scaled {
+  /* scale is applied inline by JS via style.transform = `scale(x)` */
+}
+
+/* ----------------------------------------------- */
 
 #status{
   position: absolute;
