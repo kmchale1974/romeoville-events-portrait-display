@@ -35,31 +35,34 @@ html, body {
   position: relative;
 }
 
+/* IMPORTANT: keep pages hidden by default */
 .page{
   display: none;
   position: absolute;
   inset: 0;
   padding: var(--pad);
-
-  /* 👇 vertical + horizontal centering */
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  align-items: flex-start;
 }
 
+/* Only the active page is shown + centered */
 .page.active{
   display: flex;
+  flex-direction: column;
+  justify-content: center;   /* vertical centering */
+  align-items: flex-start;
+  gap: 14px;                 /* spacing between events */
   animation: fadeIn var(--fade-ms) ease-in-out;
 }
 
 .event{
-  padding: 16px 0;
+  width: 100%;
+  max-width: 98%;            /* keep a little breathing room on the right */
+  padding: 12px 0 16px 0;
   border-bottom: var(--line) solid var(--rule);
-  width: 100%; /* ensure full width for wrapping */
-  word-wrap: break-word; 
-  overflow-wrap: break-word; /* modern wrapping */
-  white-space: normal;       /* allow multi-line */
+
+  /* wrap long words/URLs cleanly */
+  word-wrap: break-word;
+  overflow-wrap: break-word;
+  white-space: normal;
 }
 
 .event:last-child{
@@ -77,7 +80,7 @@ html, body {
   font-size: var(--meta-size);
   margin: 2px 0;
   color: #444;
-  padding-left: 16px; /* slight indent */
+  padding-left: 16px; /* slight indent under the title */
   word-wrap: break-word;
   overflow-wrap: break-word;
   white-space: normal;
