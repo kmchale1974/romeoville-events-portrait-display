@@ -239,4 +239,37 @@
 
   // Hourly soft refresh (fetch new data, re-render)
   function scheduleHourlyRefresh() {
-    const ms = CONFI
+    const ms = CONFIG.REFRESH_EVERY_MINUTES * 60 * 1000;
+    setInterval(loadAndRender, ms);
+  }
+
+  // Hard reload at midnight (full page reload)
+  function scheduleMidnightReload() {
+    if (!CONFIG.HARD_RELOAD_AT_MIDNIGHT) return;
+
+    const now = new Date();
+    const next = new Date(now);
+    next.setHours(24, 0, 2, 0); // ~2 seconds after midnight to avoid edge jitter
+    const delay = next.getTime() - now.getTime();
+
+    setTimeout(() => {
+      location.reload();
+    }, delay);
+  }
+
+  function escapeHtml(s) {
+    return String(s)
+      .replaceAll('&', '&amp;')
+      .replaceAll('<', '&lt;')
+      .replaceAll('>', '&gt;')
+      .replaceAll('"', '&quot;')
+      .replaceAll("'", '&#39;');
+  }
+
+  // Init
+  window.addEventListener('load', async () => {
+    await loadAndRender();
+    scheduleHourlyRefresh();
+    scheduleMidnightReload();
+  });
+})();
