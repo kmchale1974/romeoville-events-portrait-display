@@ -2,11 +2,11 @@
   // ======= CONFIG =======
   const CONFIG = {
     EVENTS_URL: 'events.json',
-    EVENTS_PER_PAGE: 5,            // show 5 at a time (your current choice)
+    EVENTS_PER_PAGE: 5,            // your current setting
     MAX_EVENTS: 20,                // total cap
-    PAGE_DURATION_MS: 12_000,      // 12 seconds per page (your current choice)
-    REFRESH_EVERY_MINUTES: 60,     // reload data hourly
-    HARD_RELOAD_AT_MIDNIGHT: true, // full reload after midnight
+    PAGE_DURATION_MS: 12_000,      // your current setting
+    REFRESH_EVERY_MINUTES: 60,
+    HARD_RELOAD_AT_MIDNIGHT: true,
     TIMEZONE: Intl.DateTimeFormat().resolvedOptions().timeZone || 'America/Chicago'
   };
 
@@ -170,7 +170,7 @@
     }
   }
 
-  // Auto-fit: step down text sizes, then scale the whole page as a last resort
+  // Auto-fit: step down sizes; if still too tall, scale the page without widening
   function fitActivePage() {
     const active = document.querySelector('.page.active');
     if (!active) return;
@@ -178,31 +178,24 @@
     // reset fit classes and any existing transform before measuring
     active.classList.remove('tight', 'tighter', 'scaled');
     active.style.transform = '';
-    active.style.width = ''; // reset any width compensation
 
     const fits = () => active.scrollHeight <= active.clientHeight;
 
-    // Step 1: default
     if (fits()) return;
 
-    // Step 2: tight
     active.classList.add('tight');
     if (fits()) return;
 
-    // Step 3: tighter
     active.classList.add('tighter');
     if (fits()) return;
 
-    // Step 4: scale the entire page to fit
+    // Last resort: scale down to fit — do NOT widen (prevents right-edge clipping)
     const h = active.scrollHeight;
-    const H = active.clientHeight; // container height
+    const H = active.clientHeight;
     if (h > 0 && H > 0) {
       const scale = Math.min(1, Math.max(0.7, H / h)); // don’t shrink below 70%
       active.classList.add('scaled');
-      active.style.transform = `scale(${scale})`;
-      // When scaling down, widen the page so the scaled content re-fills the width
-      // (prevents looking too narrow). Compensate width by 1/scale.
-      active.style.width = `${(1/scale) * 100}%`;
+      active.style.transform = `scale(${scale})`; // keep width at 100%
     }
   }
 
@@ -261,7 +254,6 @@
     await loadAndRender();
     scheduleHourlyRefresh();
     scheduleMidnightReload();
-    // Re-fit on resize just in case the player/browser scales
     window.addEventListener('resize', fitActivePage);
   });
 })();
