@@ -154,6 +154,9 @@
   function updateActivePage() {
     const pageEls = Array.from(document.querySelectorAll('.page'));
     pageEls.forEach((el, i) => el.classList.toggle('active', i === currentPage));
+
+    // After activating a page, auto-fit it to prevent clipping
+    fitActivePage();
   }
 
   function startRotation() {
@@ -169,6 +172,24 @@
     if (rotateTimer) {
       clearInterval(rotateTimer);
       rotateTimer = null;
+    }
+  }
+
+  // Auto-fit: shrink fonts/margins if content would overflow the 960x1080 container
+  function fitActivePage() {
+    const active = document.querySelector('.page.active');
+    if (!active) return;
+
+    // reset fit classes then measure
+    active.classList.remove('tight', 'tighter');
+
+    const fits = () => active.scrollHeight <= active.clientHeight;
+
+    if (!fits()) {
+      active.classList.add('tight');
+      if (!fits()) {
+        active.classList.add('tighter');
+      }
     }
   }
 
@@ -191,12 +212,16 @@
       console.error('Load error:', err);
       setStatus('Failed to load events.');
       $pages().innerHTML = `<div class="page active"><div class="event"><div class="event-title">No upcoming events found.</div></div></div>`;
+      fitActivePage();
     }
   }
 
   function scheduleHourlyRefresh() {
     const ms = CONFIG.REFRESH_EVERY_MINUTES * 60 * 1000;
-    setInterval(loadAndRender, ms);
+    setInterval(async () => {
+      await loadAndRender();
+      fitActivePage();
+    }, ms);
   }
 
   function scheduleMidnightReload() {
