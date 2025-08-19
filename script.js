@@ -2,7 +2,7 @@
   // ======= CONFIG =======
   const CONFIG = {
     EVENTS_URL: 'events.json',     // Same-origin JSON
-    EVENTS_PER_PAGE: 12,           // Good density for 1080×960
+    EVENTS_PER_PAGE: 12,           // events per page
     MAX_EVENTS: 32,                // hard cap
     PAGE_DURATION_MS: 20_000,      // 20 seconds per page
     REFRESH_EVERY_MINUTES: 60,     // reload data hourly
@@ -17,32 +17,23 @@
   const $pages = () => document.getElementById('pages');
   const $status = () => document.getElementById('status');
 
-  // Small helper: cache-busting query param
   const withCacheBust = (url) => {
     const u = new URL(url, location.href);
     u.searchParams.set('_', String(Date.now()));
     return u.toString();
   };
 
-  // Parse dates robustly:
   function parseDateSafe(val) {
     if (!val) return null;
-    // Accept ISO strings or RFC strings
     const d = new Date(val);
     return isNaN(d.getTime()) ? null : d;
   }
 
-  // Normalize one event record. Supports either:
-  // 1) { title, start, end, location } with ISO strings
-  // 2) { title, date, time, location } legacy format (falls back to 'date' only)
   function normalizeEvent(e) {
     let start = parseDateSafe(e.start);
     let end = parseDateSafe(e.end);
 
     if (!start && e.date) {
-      // Try to build a start date from "date" and optional "time"
-      // e.g., date: "August 19, 2025", time: "6:00 PM - 8:00 PM"
-      // We'll parse the first time range start if present:
       let startTimeStr = null;
       if (e.time && typeof e.time === 'string') {
         const m = e.time.match(/(\d{1,2}:\d{2}\s*[AP]M)/i);
@@ -52,17 +43,13 @@
       start = parseDateSafe(base);
     }
 
-    if (!end) {
-      // If end is missing, assume same as start or +2 hours as a safe default
-      if (start) {
-        end = new Date(start.getTime() + 2 * 60 * 60 * 1000);
-      }
+    if (!end && start) {
+      end = new Date(start.getTime() + 2 * 60 * 60 * 1000);
     }
 
     return {
       title: e.title || 'Untitled Event',
       location: e.location || 'TBA',
-      // keep legacy display strings if present
       displayDate: e.date || null,
       displayTime: e.time || null,
       start,
@@ -70,10 +57,8 @@
     };
   }
 
-  // Show "Date:" and "Time:" with fallbacks
   function formatEventDate(e) {
     if (e.displayDate) return e.displayDate;
-
     if (e.start) {
       const fmt = new Intl.DateTimeFormat('en-US', {
         weekday: 'short',
@@ -89,7 +74,6 @@
 
   function formatEventTime(e) {
     if (e.displayTime) return e.displayTime;
-
     if (e.start) {
       const fmt = new Intl.DateTimeFormat('en-US', {
         hour: 'numeric',
@@ -108,11 +92,9 @@
 
   function filterUpcoming(list) {
     const now = new Date();
-    // Consider events that have not fully ended today (keep all today & future)
     return list.filter(e => {
       if (e.end) return e.end.getTime() >= startOfDay(now).getTime();
       if (e.start) return e.start.getTime() >= startOfDay(now).getTime();
-      // if no date info, keep (or drop). We'll keep to be safe.
       return true;
     });
   }
@@ -140,27 +122,6 @@
     if (el) el.textContent = msg || '';
   }
 
-  function renderPages(events) {
-    const pagesHtml = events.map(e => {
-      const dateStr = formatEventDate(e);
-      const timeStr = formatEventTime(e);
-      const locStr = e.location || 'TBA';
-
-      return `
-        <div class="event">
-          <div class="event-title">${escapeHtml(e.title)}</div>
-          <div class="event-row">
-            <div class="badge">Date: ${escapeHtml(dateStr)}</div>
-            <div class="badge">Time: ${escapeHtml(timeStr)}</div>
-            <div class="badge">Location: ${escapeHtml(locStr)}</div>
-          </div>
-        </div>
-      `;
-    });
-
-    $pages().innerHTML = pagesHtml.join('');
-  }
-
   function renderPaged(events) {
     const groups = chunk(events, CONFIG.EVENTS_PER_PAGE);
     pages = groups.map(group => {
@@ -171,20 +132,16 @@
         return `
           <div class="event">
             <div class="event-title">${escapeHtml(e.title)}</div>
-            <div class="event-row">
-              <div class="badge">Date: ${escapeHtml(dateStr)}</div>
-              <div class="badge">Time: ${escapeHtml(timeStr)}</div>
-              <div class="badge">Location: ${escapeHtml(locStr)}</div>
-            </div>
+            <div class="event-detail">Date: ${escapeHtml(dateStr)}</div>
+            <div class="event-detail">Time: ${escapeHtml(timeStr)}</div>
+            <div class="event-detail">Location: ${escapeHtml(locStr)}</div>
           </div>
         `;
       }).join('');
-
       return `<div class="page">${items}</div>`;
     });
 
     $pages().innerHTML = pages.join('');
-    // Activate first page
     currentPage = 0;
     updateActivePage();
   }
@@ -217,13 +174,9 @@
       if (!res.ok) throw new Error(`HTTP ${res.status}`);
       const raw = await res.json();
 
-      // Normalize events
       const norm = (Array.isArray(raw) ? raw : []).map(normalizeEvent);
-
-      // Filter upcoming and sort
       const upcoming = filterUpcoming(norm).sort(sortByStart).slice(0, CONFIG.MAX_EVENTS);
 
-      // Render as pages + start rotation
       renderPaged(upcoming);
       startRotation();
 
@@ -232,29 +185,22 @@
     } catch (err) {
       console.error('Load error:', err);
       setStatus('Failed to load events.');
-      // still clear / show empty
       $pages().innerHTML = `<div class="page active"><div class="event"><div class="event-title">No upcoming events found.</div></div></div>`;
     }
   }
 
-  // Hourly soft refresh (fetch new data, re-render)
   function scheduleHourlyRefresh() {
     const ms = CONFIG.REFRESH_EVERY_MINUTES * 60 * 1000;
     setInterval(loadAndRender, ms);
   }
 
-  // Hard reload at midnight (full page reload)
   function scheduleMidnightReload() {
     if (!CONFIG.HARD_RELOAD_AT_MIDNIGHT) return;
-
     const now = new Date();
     const next = new Date(now);
-    next.setHours(24, 0, 2, 0); // ~2 seconds after midnight to avoid edge jitter
+    next.setHours(24, 0, 2, 0);
     const delay = next.getTime() - now.getTime();
-
-    setTimeout(() => {
-      location.reload();
-    }, delay);
+    setTimeout(() => location.reload(), delay);
   }
 
   function escapeHtml(s) {
@@ -266,7 +212,6 @@
       .replaceAll("'", '&#39;');
   }
 
-  // Init
   window.addEventListener('load', async () => {
     await loadAndRender();
     scheduleHourlyRefresh();
