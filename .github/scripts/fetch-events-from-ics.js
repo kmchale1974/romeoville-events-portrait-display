@@ -1,46 +1,62 @@
 /**
- * Merge events from one or more ICS (iCalendar) feeds into events.json
- * Filters out past events, sorts ascending, caps total (20 by default).
- * Output schema matches your frontend's preferred format:
- *   { title, start, end, location }
+ * Merge events from one or more ICS (iCalendar) feeds into events.json.
+ * - Strips HTML tags (<p>, <br>, etc.) from text fields
+ * - Filters out past events (anything that fully ended before start of today)
+ * - Sorts ascending by start
+ * - Caps total to MAX_EVENTS
+ * - Outputs: [{ title, start, end, location }]
  *
  * Usage:
- *   node fetch-events-from-ics.js <ICS_URL_1> <ICS_URL_2> ...
+ *   node .github/scripts/fetch-events-from-ics.js <ICS_URL_1> <ICS_URL_2> ...
+ *
+ * Dependencies:
+ *   npm install node-ical
  */
 
 const fs = require("fs");
 const ical = require("node-ical");
 
-const MAX_EVENTS = 20; // keep in sync with your frontend MAX_EVENTS if you like
+const MAX_EVENTS = 20;             // adjust if you want more/less in events.json
 const OUTPUT_FILE = "events.json";
 
-// Simple helper: beginning of today
+/* ---------- Helpers ---------- */
+
+function stripTags(str) {
+  if (!str) return "";
+  return String(str).replace(/<\/?[^>]+>/g, "").replace(/\s+/g, " ").trim();
+}
+
 function startOfToday() {
   const now = new Date();
   return new Date(now.getFullYear(), now.getMonth(), now.getDate());
 }
 
+/**
+ * Convert a VEVENT into a normalized object we can use.
+ * Ensures we always return {title, start, end, location}.
+ */
+function normalizeVEvent(item) {
+  const title = stripTags(item.summary) || "Untitled Event";
+  const start = item.start instanceof Date ? item.start : null;
+  const end = item.end instanceof Date ? item.end : null;
+  const location = stripTags(item.location) || "TBA";
+  return { title, start, end, location };
+}
+
 async function parseIcs(url) {
   const data = await ical.async.fromURL(url);
   const events = [];
-
   for (const key of Object.keys(data)) {
     const item = data[key];
     if (!item || item.type !== "VEVENT") continue;
-
-    const title = item.summary || "Untitled Event";
-    const start = item.start instanceof Date ? item.start : null;
-    const end = item.end instanceof Date ? item.end : null;
-    const location = item.location || "TBA";
-
-    // Skip invalid / undated events
-    if (!start) continue;
-
-    events.push({ title, start, end, location });
+    const ev = normalizeVEvent(item);
+    if (!ev.start) continue; // skip undated items
+    events.push(ev);
   }
-
   return events;
 }
+
+/* ---------- Main ---------- */
 
 (async () => {
   try {
@@ -54,11 +70,20 @@ async function parseIcs(url) {
     const results = await Promise.all(urls.map(parseIcs));
     let merged = results.flat();
 
-    // Filter: keep anything that hasn't fully ended yet (>= start of today)
-    const today = startOfToday().getTime();
+    // Optional: de-duplicate by (title + start ISO)
+    const seen = new Set();
     merged = merged.filter(e => {
-      const end = e.end ? e.end.getTime() : (e.start.getTime() + 2*60*60*1000);
-      return end >= today;
+      const key = `${e.title}|${e.start?.toISOString() ?? ""}`;
+      if (seen.has(key)) return false;
+      seen.add(key);
+      return true;
+    });
+
+    // Filter: keep anything that hasn't fully ended yet (>= start of today)
+    const todayMs = startOfToday().getTime();
+    merged = merged.filter(e => {
+      const endMs = e.end ? e.end.getTime() : (e.start.getTime() + 2 * 60 * 60 * 1000);
+      return endMs >= todayMs;
     });
 
     // Sort ascending by start
@@ -69,10 +94,10 @@ async function parseIcs(url) {
 
     // Serialize with ISO strings (frontend formats these nicely)
     const out = merged.map(e => ({
-      title: e.title,
+      title: stripTags(e.title),
       start: e.start ? e.start.toISOString() : null,
       end: e.end ? e.end.toISOString() : null,
-      location: e.location || "TBA"
+      location: stripTags(e.location)
     }));
 
     fs.writeFileSync(OUTPUT_FILE, JSON.stringify(out, null, 2));
