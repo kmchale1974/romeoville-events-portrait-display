@@ -43,24 +43,27 @@ html, body {
   padding: var(--pad);
 }
 
-/* Active page: evenly spaced events */
+/* Active page: distribute items top-to-bottom with minimal top gap */
 .page.active{
   display: flex;
   flex-direction: column;
-  justify-content: space-evenly;   /* evenly spaced vertically */
-  align-items: flex-start;
+  justify-content: space-between;   /* first at top, last at bottom */
+  align-items: stretch;
   animation: fadeIn var(--fade-ms) ease-in-out;
 }
 
+/* Each event block */
 .event{
   width: 100%;
-  max-width: 98%;            /* breathing room on the right */
-  padding: 12px 0 16px 0;
+  max-width: 100%;
+  padding: 12px 16px 16px;          /* L/R padding to keep text off edges */
   border-bottom: var(--line) solid var(--rule);
 
-  /* wrap long words/URLs cleanly */
-  word-wrap: break-word;
+  /* robust wrapping to avoid cut-offs */
   overflow-wrap: break-word;
+  word-wrap: break-word;
+  word-break: break-word;
+  hyphens: auto;
   white-space: normal;
 }
 
@@ -80,8 +83,9 @@ html, body {
   margin: 2px 0;
   color: #444;
   padding-left: 16px; /* slight indent under the title */
-  word-wrap: break-word;
   overflow-wrap: break-word;
+  word-break: break-word;
+  hyphens: auto;
   white-space: normal;
 }
 
