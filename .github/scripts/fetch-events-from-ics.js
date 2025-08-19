@@ -1,9 +1,9 @@
 /**
  * Merge events from ICS feeds into events.json.
  * - Strips HTML and ICS escapes
- * - Location is reduced to the venue name (text before the first comma)
- * - Filters out past events (fully ended before start of today)
- * - Sorts ascending by start; caps to MAX_EVENTS
+ * - Location: keep venue only (before dash/comma), drop City/State/ZIP
+ * - Filters out past events (ended before start of today)
+ * - Sorts ascending, caps MAX_EVENTS
  * - Outputs: [{ title, start, end, location }]
  *
  * Usage:
@@ -16,7 +16,7 @@
 const fs = require("fs");
 const ical = require("node-ical");
 
-const MAX_EVENTS = 20;             // keep in sync with your frontend cap if desired
+const MAX_EVENTS = 20;
 const OUTPUT_FILE = "events.json";
 
 /* ---------- Helpers ---------- */
@@ -38,26 +38,41 @@ function unescapeICS(str) {
 }
 
 /**
- * Clean location:
- * 1) Strip HTML + unescape ICS
- * 2) If there is a comma, keep everything BEFORE the first comma (venue name)
- * 3) Else, strip trailing "City, ST 12345" if present
+ * Clean location aggressively:
+ * 1) Strip HTML + unescape
+ * 2) If contains " - " (or an em/en dash), keep only text BEFORE the dash (venue)
+ * 3) Else if contains a comma, keep only text BEFORE first comma
+ * 4) Remove trailing "City, ST ZIP" or "City ST ZIP" patterns if any remain
+ * 5) Normalize empties/leading dashes to "TBA"
  */
 function cleanLocation(loc) {
   if (!loc) return "TBA";
-  let s = unescapeICS(stripTags(loc));
+  let s = unescapeICS(stripTags(loc)).trim();
 
-  // If there's a comma, assume "Venue, Street, City, ST ZIP" and keep only the venue
-  const firstComma = s.indexOf(",");
-  if (firstComma > -1) {
-    const venue = s.slice(0, firstComma).trim();
-    return venue || "TBA";
+  // If it starts with just a dash or is empty after trim, call it TBA
+  if (!s || /^-+\s*$/.test(s)) return "TBA";
+
+  // Split by dash variants first (most feeds use " - ")
+  const dashMatch = s.split(/\s[-–—]\s/, 2); // hyphen, en dash, em dash
+  if (dashMatch.length > 1) {
+    s = dashMatch[0].trim();
+  } else {
+    // Otherwise split by first comma
+    const idx = s.indexOf(",");
+    if (idx > -1) s = s.slice(0, idx).trim();
   }
 
-  // Fallback: remove trailing "City, ST 12345" (or "City, ST" if ZIP missing)
-  s = s.replace(/\s*,?\s*[A-Za-z .'-]+,\s*[A-Z]{2}\s*\d{5}(?:-\d{4})?$/i, "").trim();
+  // Remove any trailing ", Romeoville, IL 60446" / ", Romeoville IL 60446" / "Romeoville, IL" / etc.
+  s = s.replace(/\s*,?\s*Romeoville\s*,?\s*IL(?:\s*\d{5}(?:-\d{4})?)?$/i, "").trim();
 
-  return s || "TBA";
+  // Generic trailing "City, ST 12345" or "City ST 12345" (if venue strings are odd)
+  s = s.replace(/\s*,?\s*[A-Za-z .'\-]+,\s*[A-Z]{2}\s*\d{5}(?:-\d{4})?$/i, "").trim();
+  s = s.replace(/\s*,?\s*[A-Za-z .'\-]+\s+[A-Z]{2}\s*\d{5}(?:-\d{4})?$/i, "").trim();
+
+  // If still empty or just a dash, fallback
+  if (!s || /^-+\s*$/.test(s)) return "TBA";
+
+  return s;
 }
 
 function startOfToday() {
