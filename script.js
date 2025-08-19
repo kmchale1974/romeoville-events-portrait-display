@@ -2,11 +2,11 @@
   // ======= CONFIG =======
   const CONFIG = {
     EVENTS_URL: 'events.json',
-    EVENTS_PER_PAGE: 4,            // 👈 show 4 at a time
-    MAX_EVENTS: 20,                // 👈 total cap of 20
-    PAGE_DURATION_MS: 12_000,
-    REFRESH_EVERY_MINUTES: 60,
-    HARD_RELOAD_AT_MIDNIGHT: true,
+    EVENTS_PER_PAGE: 4,            // show 4 at a time
+    MAX_EVENTS: 20,                // total cap of 20
+    PAGE_DURATION_MS: 12_000,      // 20 seconds per page
+    REFRESH_EVERY_MINUTES: 60,     // reload data hourly
+    HARD_RELOAD_AT_MIDNIGHT: true, // full reload after midnight
     TIMEZONE: Intl.DateTimeFormat().resolvedOptions().timeZone || 'America/Chicago'
   };
 
@@ -17,6 +17,7 @@
   const $pages = () => document.getElementById('pages');
   const $status = () => document.getElementById('status');
 
+  // cache-busting query param each fetch
   const withCacheBust = (url) => {
     const u = new URL(url, location.href);
     u.searchParams.set('_', String(Date.now()));
@@ -33,6 +34,7 @@
     let start = parseDateSafe(e.start);
     let end = parseDateSafe(e.end);
 
+    // Build start from legacy date/time if needed
     if (!start && e.date) {
       let startTimeStr = null;
       if (e.time && typeof e.time === 'string') {
@@ -43,6 +45,7 @@
       start = parseDateSafe(base);
     }
 
+    // Default end to +2 hours if missing
     if (!end && start) {
       end = new Date(start.getTime() + 2 * 60 * 60 * 1000);
     }
@@ -92,10 +95,11 @@
 
   function filterUpcoming(list) {
     const now = new Date();
+    const sod = startOfDay(now).getTime();
     return list.filter(e => {
-      if (e.end) return e.end.getTime() >= startOfDay(now).getTime();
-      if (e.start) return e.start.getTime() >= startOfDay(now).getTime();
-      return true;
+      if (e.end) return e.end.getTime() >= sod;
+      if (e.start) return e.start.getTime() >= sod;
+      return true; // keep undated items
     });
   }
 
@@ -125,7 +129,7 @@
   function renderPaged(events) {
     const groups = chunk(events, CONFIG.EVENTS_PER_PAGE);
     pages = groups.map(group => {
-      const items = group.map(e => {
+      const itemsHtml = group.map(e => {
         const dateStr = formatEventDate(e);
         const timeStr = formatEventTime(e);
         const locStr = e.location || 'TBA';
@@ -138,7 +142,10 @@
           </div>
         `;
       }).join('');
-      return `<div class="page">${items}</div>`;
+
+      // If fewer than EVENTS_PER_PAGE items, mark the page compact (top-aligned)
+      const compactClass = group.length < CONFIG.EVENTS_PER_PAGE ? ' compact' : '';
+      return `<div class="page${compactClass}">${itemsHtml}</div>`;
     });
 
     $pages().innerHTML = pages.join('');
@@ -198,7 +205,7 @@
     if (!CONFIG.HARD_RELOAD_AT_MIDNIGHT) return;
     const now = new Date();
     const next = new Date(now);
-    next.setHours(24, 0, 2, 0);
+    next.setHours(24, 0, 2, 0); // ~2s after midnight
     const delay = next.getTime() - now.getTime();
     setTimeout(() => location.reload(), delay);
   }
