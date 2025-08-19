@@ -2,9 +2,9 @@
   // ======= CONFIG =======
   const CONFIG = {
     EVENTS_URL: 'events.json',
-    EVENTS_PER_PAGE: 4,            // show 4 at a time
+    EVENTS_PER_PAGE: 5,            // show 5 at a time
     MAX_EVENTS: 20,                // total cap of 20
-    PAGE_DURATION_MS: 20_000,      // 20 seconds per page
+    PAGE_DURATION_MS: 12_000,      // 12 seconds per page
     REFRESH_EVERY_MINUTES: 60,     // reload data hourly
     HARD_RELOAD_AT_MIDNIGHT: true, // full reload after midnight
     TIMEZONE: Intl.DateTimeFormat().resolvedOptions().timeZone || 'America/Chicago'
