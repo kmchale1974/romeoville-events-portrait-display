@@ -1,12 +1,12 @@
 (() => {
   // ======= CONFIG =======
   const CONFIG = {
-    EVENTS_URL: 'events.json',     // Same-origin JSON
-    EVENTS_PER_PAGE: 5,           // events per page
-    MAX_EVENTS: 25,                // hard cap
-    PAGE_DURATION_MS: 12_000,      // 20 seconds per page
-    REFRESH_EVERY_MINUTES: 60,     // reload data hourly
-    HARD_RELOAD_AT_MIDNIGHT: true, // full reload right after midnight
+    EVENTS_URL: 'events.json',
+    EVENTS_PER_PAGE: 4,            // 👈 show 4 at a time
+    MAX_EVENTS: 20,                // 👈 total cap of 20
+    PAGE_DURATION_MS: 12_000,
+    REFRESH_EVERY_MINUTES: 60,
+    HARD_RELOAD_AT_MIDNIGHT: true,
     TIMEZONE: Intl.DateTimeFormat().resolvedOptions().timeZone || 'America/Chicago'
   };
 
