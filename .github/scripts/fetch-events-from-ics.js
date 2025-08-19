@@ -1,109 +1,87 @@
 /**
- * Merge events from one or more ICS (iCalendar) feeds into events.json.
- * - Strips HTML tags (<p>, <br>, etc.) from text fields
- * - Filters out past events (anything that fully ended before start of today)
- * - Sorts ascending by start
- * - Caps total to MAX_EVENTS
- * - Outputs: [{ title, start, end, location }]
- *
- * Usage:
- *   node .github/scripts/fetch-events-from-ics.js <ICS_URL_1> <ICS_URL_2> ...
- *
- * Dependencies:
- *   npm install node-ical
+ * Merge events from ICS feeds into events.json, stripping HTML and location suffixes.
  */
 
 const fs = require("fs");
 const ical = require("node-ical");
-
-const MAX_EVENTS = 20;             // adjust if you want more/less in events.json
+const MAX_EVENTS = 20;
 const OUTPUT_FILE = "events.json";
-
-/* ---------- Helpers ---------- */
 
 function stripTags(str) {
   if (!str) return "";
   return String(str).replace(/<\/?[^>]+>/g, "").replace(/\s+/g, " ").trim();
 }
 
-function startOfToday() {
-  const now = new Date();
-  return new Date(now.getFullYear(), now.getMonth(), now.getDate());
+// Trim location by removing any trailing city/state/zip phrases
+function cleanLocation(loc) {
+  if (!loc) return "TBA";
+  let s = stripTags(loc);
+  // Remove trailing ", Romeoville, IL" or variations
+  return s.replace(/,\s*Romeoville\s*,?\s*IL\s*(\d{5})?$/i, "").trim() || "TBA";
 }
 
-/**
- * Convert a VEVENT into a normalized object we can use.
- * Ensures we always return {title, start, end, location}.
- */
+function startOfToday() {
+  const d = new Date();
+  return new Date(d.getFullYear(), d.getMonth(), d.getDate());
+}
+
 function normalizeVEvent(item) {
   const title = stripTags(item.summary) || "Untitled Event";
   const start = item.start instanceof Date ? item.start : null;
   const end = item.end instanceof Date ? item.end : null;
-  const location = stripTags(item.location) || "TBA";
+  const location = cleanLocation(item.location);
   return { title, start, end, location };
 }
 
 async function parseIcs(url) {
   const data = await ical.async.fromURL(url);
   const events = [];
-  for (const key of Object.keys(data)) {
+  for (const key in data) {
     const item = data[key];
-    if (!item || item.type !== "VEVENT") continue;
+    if (item?.type !== "VEVENT") continue;
     const ev = normalizeVEvent(item);
-    if (!ev.start) continue; // skip undated items
+    if (!ev.start) continue;
     events.push(ev);
   }
   return events;
 }
 
-/* ---------- Main ---------- */
-
 (async () => {
   try {
     const urls = process.argv.slice(2);
-    if (urls.length === 0) {
-      console.error("Provide at least one ICS URL as an argument.");
-      process.exit(1);
-    }
+    if (!urls.length) throw new Error("Please provide at least one ICS URL.");
 
-    // Fetch & merge all feeds
-    const results = await Promise.all(urls.map(parseIcs));
-    let merged = results.flat();
+    const feeds = await Promise.all(urls.map(parseIcs));
+    let merged = feeds.flat();
 
-    // Optional: de-duplicate by (title + start ISO)
     const seen = new Set();
     merged = merged.filter(e => {
-      const key = `${e.title}|${e.start?.toISOString() ?? ""}`;
-      if (seen.has(key)) return false;
-      seen.add(key);
+      const k = `${e.title}|${e.start?.toISOString()}`;
+      if (seen.has(k)) return false;
+      seen.add(k);
       return true;
     });
 
-    // Filter: keep anything that hasn't fully ended yet (>= start of today)
-    const todayMs = startOfToday().getTime();
+    const today = startOfToday().getTime();
     merged = merged.filter(e => {
-      const endMs = e.end ? e.end.getTime() : (e.start.getTime() + 2 * 60 * 60 * 1000);
-      return endMs >= todayMs;
+      const endMs = e.end?.getTime() || (e.start.getTime() + 2 * 60 * 60 * 1000);
+      return endMs >= today;
     });
 
-    // Sort ascending by start
-    merged.sort((a, b) => (a.start?.getTime() ?? 9e15) - (b.start?.getTime() ?? 9e15));
-
-    // Cap total
+    merged.sort((a, b) => (a.start?.getTime() || Infinity) - (b.start?.getTime() || Infinity));
     merged = merged.slice(0, MAX_EVENTS);
 
-    // Serialize with ISO strings (frontend formats these nicely)
     const out = merged.map(e => ({
       title: stripTags(e.title),
-      start: e.start ? e.start.toISOString() : null,
+      start: e.start.toISOString(),
       end: e.end ? e.end.toISOString() : null,
-      location: stripTags(e.location)
+      location: cleanLocation(e.location),
     }));
 
     fs.writeFileSync(OUTPUT_FILE, JSON.stringify(out, null, 2));
     console.log(`✅ Wrote ${out.length} events to ${OUTPUT_FILE}`);
   } catch (err) {
-    console.error("❌ Failed to build events.json:", err);
+    console.error("❌ Error building events.json:", err);
     process.exit(1);
   }
 })();
