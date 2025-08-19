@@ -115,5 +115,29 @@
     "start": "2025-10-05T20:00:00.000Z",
     "end": "2025-10-05T22:00:00.000Z",
     "location": "Wiggly Field Dog Park"
+  },
+  {
+    "title": "Fire Prevention Open House",
+    "start": "2025-10-11T14:00:00.000Z",
+    "end": "2025-10-11T18:00:00.000Z",
+    "location": "Fire Station No. 3"
+  },
+  {
+    "title": "Halloween Fest - Residents Only",
+    "start": "2025-10-17T21:30:00.000Z",
+    "end": "2025-10-18T01:00:00.000Z",
+    "location": "Deer Crossing Park"
+  },
+  {
+    "title": "Dive-In Movie: Hotel Transylvania",
+    "start": "2025-10-24T22:00:00.000Z",
+    "end": "2025-10-25T04:59:00.000Z",
+    "location": "Romeoville Aquatic Center"
+  },
+  {
+    "title": "Veterans Day Breakfast & Ceremony",
+    "start": "2025-11-11T15:00:00.000Z",
+    "end": "2025-11-11T17:00:00.000Z",
+    "location": "Recreation Center"
   }
 ]
