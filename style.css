@@ -49,7 +49,17 @@ html, body {
   flex-direction: column;
   justify-content: space-between;   /* first at top, last at bottom */
   align-items: stretch;
+  padding-top: 8px;                 /* small breathing room */
+  padding-bottom: 8px;
   animation: fadeIn var(--fade-ms) ease-in-out;
+}
+
+/* If a page has fewer than EVENTS_PER_PAGE items, top-align it */
+.page.active.compact{
+  justify-content: flex-start;      /* stack from the top */
+}
+.page.active.compact .event{
+  margin-bottom: 10px;              /* natural spacing in compact mode */
 }
 
 /* Each event block */
@@ -82,7 +92,7 @@ html, body {
   font-size: var(--meta-size);
   margin: 2px 0;
   color: #444;
-  padding-left: 16px; /* slight indent under the title */
+  padding-left: 16px;               /* slight indent under the title */
   overflow-wrap: break-word;
   word-break: break-word;
   hyphens: auto;
