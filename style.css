@@ -24,7 +24,7 @@ html, body {
   width: var(--container-w);
   height: var(--container-h);
   margin: 0 auto;
-  overflow: hidden;  /* keep strictly contained */
+  overflow: hidden;       /* strictly contained */
   background: var(--bg);
   position: relative;
 }
@@ -41,8 +41,7 @@ html, body {
   position: absolute;
   inset: 0;
   padding: var(--pad);
-  /* NEW: let transforms scale content without blurring text too much */
-  transform-origin: top left;       /* ensure scale fits from top-left */
+  transform-origin: top left;   /* scaling fits from top-left */
 }
 
 /* Active page: top-aligned with consistent gap */
@@ -55,18 +54,17 @@ html, body {
   animation: fadeIn var(--fade-ms) ease-in-out;
 }
 
-/* NEW: allow flex children to actually shrink in columns (prevents side clipping) */
+/* allow flex children to shrink properly (prevents side clipping) */
 .page.active > * { min-width: 0; }
 
 /* Each event block */
 .event{
   width: 100%;
   max-width: 100%;
-  padding: 10px 14px 12px;
+  padding: 10px 14px 12px;      /* L/R padding to keep text off edges */
   border-bottom: var(--line) solid var(--rule);
 
-  /* strongest wrapping to avoid cut-offs */
-  overflow-wrap: anywhere;
+  overflow-wrap: anywhere;      /* strongest wrapping */
   word-wrap: break-word;
   word-break: break-word;
   hyphens: auto;
@@ -80,6 +78,7 @@ html, body {
   font-size: var(--title-size);
   line-height: 1.25;
   margin: 0 0 6px 0;
+  padding-right: 2px;           /* tiny buffer to avoid right-edge kiss */
   overflow-wrap: anywhere;
   word-break: break-word;
   hyphens: auto;
@@ -89,7 +88,7 @@ html, body {
   font-size: var(--meta-size);
   margin: 2px 0;
   color: #444;
-  padding-left: 14px;
+  padding-left: 14px;           /* slight indent under the title */
   overflow-wrap: anywhere;
   word-break: break-word;
   hyphens: auto;
@@ -107,10 +106,8 @@ html, body {
 .page.active.tighter{ gap: 6px; }
 .page.active.tighter .event{ padding: 6px 10px 8px; }
 
-/* NEW: when scaling is needed beyond tighter */
-.page.active.scaled {
-  /* scale is applied inline by JS via style.transform = `scale(x)` */
-}
+/* when scaling is needed, JS adds .scaled and only applies transform */
+.page.active.scaled {}
 
 /* ----------------------------------------------- */
 
