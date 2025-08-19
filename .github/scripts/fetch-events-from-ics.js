@@ -1,13 +1,15 @@
 /**
  * Merge events from ICS feeds into events.json.
  * - Strips HTML and ICS escapes
- * - Cleans location to a venue-only string (before dash/comma; removes City/State/ZIP)
+ * - Cleans location to venue-only (before dash/comma; removes City/State/ZIP)
+ * - Omits "location" field entirely if it would be "TBA"
  * - Filters out past events (ended before start of today)
  * - Sorts ascending, caps to MAX_EVENTS
- * - Writes events.json in repo root
  *
- * Usage:
- *   node .github/scripts/fetch-events-from-ics.js <ICS_URL_1> <ICS_URL_2> ...
+ * Ways to provide feeds (priority order):
+ *   1) CLI args: node fetch-events-from-ics.js <url1> <url2> ...
+ *   2) Env var:  ICS_URLS="url1,url2,..." node fetch-events-from-ics.js
+ *   3) Hard-coded ICS_URLS array below
  *
  * Dependencies:
  *   npm install node-ical
@@ -16,10 +18,24 @@
 const fs = require("fs");
 const ical = require("node-ical");
 
-const MAX_EVENTS = 24;            // keep in sync with your front-end cap if desired
+const MAX_EVENTS = 24;           // <= your new cap
 const OUTPUT_FILE = "events.json";
 
-/* ---------- Helpers ---------- */
+/* ---------------- Supply your feeds here (used if no args/env) ----------------
+ * Replace the URLs below with the exact "Subscribe to iCalendar" links for:
+ *  - Important Village Dates
+ *  - Special Events Calendar
+ *  - Village Board of Trustees
+ *  - Village Office Closings
+ */
+const ICS_URLS_FALLBACK = [
+  // "https://www.romeoville.org/common/modules/iCalendar/iCalendar.aspx?catID=XX&feed=calendar", // Important Village Dates
+  // "https://www.romeoville.org/common/modules/iCalendar/iCalendar.aspx?catID=YY&feed=calendar", // Special Events Calendar
+  // "https://www.romeoville.org/common/modules/iCalendar/iCalendar.aspx?catID=ZZ&feed=calendar", // Village Board of Trustees
+  // "https://www.romeoville.org/common/modules/iCalendar/iCalendar.aspx?catID=WW&feed=calendar", // Village Office Closings
+];
+
+/* --------------------------------- Helpers --------------------------------- */
 
 function stripTags(str) {
   if (!str) return "";
@@ -98,13 +114,25 @@ async function parseIcs(url) {
   return events;
 }
 
-/* ---------- Main ---------- */
+/* ----------------------------------- Main ---------------------------------- */
 
 (async () => {
   try {
-    const urls = process.argv.slice(2);
-    if (urls.length === 0) {
-      console.error("Provide at least one ICS URL as an argument.");
+    // 1) CLI args
+    let urls = process.argv.slice(2);
+
+    // 2) Env var ICS_URLS (comma-separated)
+    if (!urls.length && process.env.ICS_URLS) {
+      urls = process.env.ICS_URLS.split(",").map(s => s.trim()).filter(Boolean);
+    }
+
+    // 3) Fallback in-file array
+    if (!urls.length) {
+      urls = ICS_URLS_FALLBACK.slice();
+    }
+
+    if (!urls.length) {
+      console.error("❌ No ICS URLs provided. Supply via CLI args, ICS_URLS env, or ICS_URLS_FALLBACK.");
       process.exit(1);
     }
 
@@ -128,11 +156,11 @@ async function parseIcs(url) {
       return endMs >= todayMs;
     });
 
-    // Sort ascending, cap
+    // Sort ascending, cap to MAX_EVENTS
     merged.sort((a, b) => (a.start?.getTime() ?? 9e15) - (b.start?.getTime() ?? 9e15));
     merged = merged.slice(0, MAX_EVENTS);
 
-    // Serialize with ISO strings, drop location if TBA
+    // Serialize with ISO strings; drop location if it would be "TBA"
     const out = merged.map(e => {
       const loc = cleanLocation(e.location);
       const ev = {
