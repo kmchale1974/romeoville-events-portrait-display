@@ -4,13 +4,10 @@
   --bg: #ffffff;
   --ink: #1b1b1b;
   --rule: #d9d9d9;
-  --accent: #6b0f1a;      /* Romeoville maroon-ish accent if needed */
-  --title-size: 24px;     /* scaled up from the 616×960 version */
+  --title-size: 24px;
   --meta-size: 18px;
   --pad: 24px;
-  --gap: 12px;
   --line: 1px;
-  --radius: 12px;
   --fade-ms: 800ms;
 }
 
@@ -51,7 +48,7 @@ html, body {
 }
 
 .event{
-  padding: 12px 0;
+  padding: 16px 0;
   border-bottom: var(--line) solid var(--rule);
 }
 
@@ -66,19 +63,11 @@ html, body {
   margin: 0 0 6px 0;
 }
 
-.event-row{
-  display: flex;
-  flex-wrap: wrap;
-  gap: var(--gap);
+.event-detail{
   font-size: var(--meta-size);
-  line-height: 1.35;
-  opacity: 0.95;
-}
-
-.badge{
-  padding: 2px 8px;
-  border: var(--line) solid var(--rule);
-  border-radius: var(--radius);
+  margin: 2px 0;
+  color: #444;
+  padding-left: 16px; /* slight indent */
 }
 
 #status{
