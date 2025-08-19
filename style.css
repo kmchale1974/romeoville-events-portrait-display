@@ -35,7 +35,7 @@ html, body {
   position: relative;
 }
 
-/* IMPORTANT: keep pages hidden by default */
+/* Pages hidden by default */
 .page{
   display: none;
   position: absolute;
@@ -43,19 +43,18 @@ html, body {
   padding: var(--pad);
 }
 
-/* Only the active page is shown + centered */
+/* Active page: evenly spaced events */
 .page.active{
   display: flex;
   flex-direction: column;
-  justify-content: center;   /* vertical centering */
+  justify-content: space-evenly;   /* evenly spaced vertically */
   align-items: flex-start;
-  gap: 14px;                 /* spacing between events */
   animation: fadeIn var(--fade-ms) ease-in-out;
 }
 
 .event{
   width: 100%;
-  max-width: 98%;            /* keep a little breathing room on the right */
+  max-width: 98%;            /* breathing room on the right */
   padding: 12px 0 16px 0;
   border-bottom: var(--line) solid var(--rule);
 
