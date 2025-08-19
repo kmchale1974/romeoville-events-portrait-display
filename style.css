@@ -24,7 +24,7 @@ html, body {
   width: var(--container-w);
   height: var(--container-h);
   margin: 0 auto;
-  overflow: hidden;       /* keep strictly contained */
+  overflow: hidden;       /* strictly contained; JS auto-fits to avoid clipping */
   background: var(--bg);
   position: relative;
 }
@@ -43,13 +43,13 @@ html, body {
   padding: var(--pad);
 }
 
-/* Active page: stack from top with a modest, consistent gap */
+/* Active page: top-aligned with consistent gap */
 .page.active{
   display: flex;
   flex-direction: column;
-  justify-content: flex-start;  /* top-aligned */
+  justify-content: flex-start;
   align-items: stretch;
-  gap: 10px;                    /* even spacing without pushing off-screen */
+  gap: 10px;                    /* even spacing */
   animation: fadeIn var(--fade-ms) ease-in-out;
 }
 
@@ -60,8 +60,8 @@ html, body {
   padding: 10px 14px 12px;      /* L/R padding to keep text off edges */
   border-bottom: var(--line) solid var(--rule);
 
-  /* robust wrapping to avoid cut-offs */
-  overflow-wrap: break-word;
+  /* robust wrapping to avoid cut-offs on long strings/URLs */
+  overflow-wrap: anywhere;
   word-wrap: break-word;
   word-break: break-word;
   hyphens: auto;
@@ -77,6 +77,9 @@ html, body {
   font-size: var(--title-size);
   line-height: 1.25;
   margin: 0 0 6px 0;
+  overflow-wrap: anywhere;
+  word-break: break-word;
+  hyphens: auto;
 }
 
 .event-detail{
@@ -84,11 +87,24 @@ html, body {
   margin: 2px 0;
   color: #444;
   padding-left: 14px;          /* slight indent under the title */
-  overflow-wrap: break-word;
+  overflow-wrap: anywhere;
   word-break: break-word;
   hyphens: auto;
   white-space: normal;
 }
+
+/* ---------- Auto-fit classes (applied by JS if needed) ---------- */
+.page.active.tight .event-title{ font-size: 22px; }
+.page.active.tight .event-detail{ font-size: 17px; }
+.page.active.tight{ gap: 8px; }
+.page.active.tight .event{ padding: 8px 12px 10px; }
+
+.page.active.tighter .event-title{ font-size: 20px; }
+.page.active.tighter .event-detail{ font-size: 16px; }
+.page.active.tighter{ gap: 6px; }
+.page.active.tighter .event{ padding: 6px 10px 8px; }
+
+/* --------------------------------------------------------------- */
 
 #status{
   position: absolute;
