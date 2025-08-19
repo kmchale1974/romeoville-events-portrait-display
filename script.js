@@ -4,7 +4,7 @@
     EVENTS_URL: 'events.json',
     EVENTS_PER_PAGE: 4,            // show 4 at a time
     MAX_EVENTS: 20,                // total cap of 20
-    PAGE_DURATION_MS: 12_000,      // 20 seconds per page
+    PAGE_DURATION_MS: 20_000,      // 20 seconds per page
     REFRESH_EVERY_MINUTES: 60,     // reload data hourly
     HARD_RELOAD_AT_MIDNIGHT: true, // full reload after midnight
     TIMEZONE: Intl.DateTimeFormat().resolvedOptions().timeZone || 'America/Chicago'
@@ -143,9 +143,7 @@
         `;
       }).join('');
 
-      // If fewer than EVENTS_PER_PAGE items, mark the page compact (top-aligned)
-      const compactClass = group.length < CONFIG.EVENTS_PER_PAGE ? ' compact' : '';
-      return `<div class="page${compactClass}">${itemsHtml}</div>`;
+      return `<div class="page">${itemsHtml}</div>`;
     });
 
     $pages().innerHTML = pages.join('');
