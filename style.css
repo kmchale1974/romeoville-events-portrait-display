@@ -40,16 +40,26 @@ html, body {
   position: absolute;
   inset: 0;
   padding: var(--pad);
+
+  /* 👇 vertical + horizontal centering */
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: flex-start;
 }
 
 .page.active{
-  display: block;
+  display: flex;
   animation: fadeIn var(--fade-ms) ease-in-out;
 }
 
 .event{
   padding: 16px 0;
   border-bottom: var(--line) solid var(--rule);
+  width: 100%; /* ensure full width for wrapping */
+  word-wrap: break-word; 
+  overflow-wrap: break-word; /* modern wrapping */
+  white-space: normal;       /* allow multi-line */
 }
 
 .event:last-child{
@@ -68,6 +78,9 @@ html, body {
   margin: 2px 0;
   color: #444;
   padding-left: 16px; /* slight indent */
+  word-wrap: break-word;
+  overflow-wrap: break-word;
+  white-space: normal;
 }
 
 #status{
