@@ -1,14 +1,226 @@
 [
   {
-    "title": "Pickleball Club at Village Park",
-    "start": "2025-08-22T18:00:00-05:00",
-    "end": "2025-08-22T20:00:00-05:00",
-    "location": "Village Park"
+    "title": "Pinochle Club",
+    "date": "August 19, 2025",
+    "time": "09:30 AM - 12:30 PM",
+    "location": "201 W. Normantown Road",
+    "link": "https://www.romeoville.org/Calendar.aspx?EID=5593"
   },
   {
-    "title": "Board Meeting",
+    "title": "Outdoor Zumba",
+    "date": "August 19, 2025",
+    "time": "07:30 PM - 08:30 PM",
+    "location": "1050 W Romeo Road",
+    "link": "https://www.romeoville.org/zumba"
+  },
+  {
+    "title": "American Mahjong",
+    "date": "August 20, 2025",
+    "time": "12:30 PM - 02:30 PM",
+    "location": "201 W. Normantown Road",
+    "link": "https://www.romeoville.org/Calendar.aspx?EID=5597"
+  },
+  {
+    "title": "Parkinson's Peer Support Group",
+    "date": "August 20, 2025",
+    "time": "02:00 PM - 04:00 PM",
+    "location": "201 W. Normantown Road",
+    "link": "https://www.romeoville.org/Calendar.aspx?EID=5582"
+  },
+  {
+    "title": "White Oak Library presents Teen Volunteer Night",
+    "date": "August 20, 2025",
+    "time": "06:00 PM - 08:00 PM",
+    "location": "201 W. Normantown Road",
+    "link": "https://www.romeoville.org/Calendar.aspx?EID=5611"
+  },
+  {
+    "title": "Village Board Meeting",
+    "date": "August 20, 2025",
+    "time": "06:00 PM - 08:00 PM",
+    "location": "1050 W. Romeo Road",
+    "link": "https://www.romeoville.org/Calendar.aspx?EID=4935"
+  },
+  {
+    "title": "The Vietnam Traveling Memorial Wall",
+    "date": "August 21, 2025 - August 24, 2025",
+    "time": "12:00 AM - 11:59 PM",
+    "location": "1050 W Romeo Road",
+    "link": "https://www.romeoville.org/Calendar.aspx?EID=5045"
+  },
+  {
+    "title": "Chamber of Commerce presents Strategic Planning Listening Tour",
+    "date": "August 21, 2025",
+    "time": "09:00 AM - 10:00 AM",
+    "location": "349 S. Weber Rd.",
+    "link": "https://www.romeoville.org/Calendar.aspx?EID=5630"
+  },
+  {
+    "title": "Foreign Fire Tax Board Meeting",
+    "date": "August 21, 2025",
+    "time": "09:30 AM - 10:30 AM",
+    "location": "18 Montrose Dr.",
+    "link": "https://www.romeoville.org/Calendar.aspx?EID=4951"
+  },
+  {
+    "title": "Vietnam Traveling Memorial Wall - Visiting Hours",
+    "date": "August 21, 2025",
+    "time": "02:00 PM - 08:00 PM",
+    "location": "1050 W. Romeo Rd.",
+    "link": "https://www.romeoville.org/Calendar.aspx?EID=5701"
+  },
+  {
+    "title": "Vietnam Traveling Memorial Wall - Opening Ceremony",
+    "date": "August 21, 2025",
+    "time": "06:00 PM - 07:00 PM",
+    "location": "1050 W. Romeo Rd.",
+    "link": "https://www.romeoville.org/Calendar.aspx?EID=5700"
+  },
+  {
+    "title": "White Oak Library presents Teen Dungeons & Dragons",
+    "date": "August 21, 2025",
+    "time": "06:00 PM - 08:00 PM",
+    "location": "201 W. Normantown Road",
+    "link": "https://www.romeoville.org/Calendar.aspx?EID=5612"
+  },
+  {
+    "title": "White Oak Library presents Resurrection Mary, Chicago’s Most Beloved Spirit: Presented by Ray Johnson",
+    "date": "August 21, 2025",
+    "time": "07:00 PM - 08:30 PM",
+    "location": "201 W. Normantown Road",
+    "link": "https://www.romeoville.org/Calendar.aspx?EID=5613"
+  },
+  {
+    "title": "Movie Under The Stars: The Wild Robot",
+    "date": "August 22, 2025",
+    "time": "12:00 AM - 11:59 PM",
+    "location": "1050 W Romeo Road",
+    "link": "https://www.romeoville.org/Calendar.aspx?EID=5030"
+  },
+  {
+    "title": "Vietnam Traveling Memorial Wall - Visiting Hours",
+    "date": "August 22, 2025",
+    "time": "07:00 AM - 08:00 PM",
+    "location": "1050 W. Romeo Rd.",
+    "link": "https://www.romeoville.org/Calendar.aspx?EID=5702"
+  },
+  {
+    "title": "LEGO Club",
+    "date": "August 22, 2025",
+    "time": "03:00 PM - 04:30 PM",
+    "location": "201 W. Normantown Road",
+    "link": "https://www.romeoville.org/Calendar.aspx?EID=5602"
+  },
+  {
+    "title": "White Oak Library presents Teen After Hours: Video Games Come To Life!",
+    "date": "August 22, 2025",
+    "time": "07:00 PM - 08:30 PM",
+    "location": "201 W. Normantown Road",
+    "link": "https://www.romeoville.org/Calendar.aspx?EID=5614"
+  },
+  {
+    "title": "Vietnam Traveling Memorial Wall - Visiting Hours",
+    "date": "August 23, 2025",
+    "time": "07:00 AM - 08:00 PM",
+    "location": "1050 W. Romeo Rd.",
+    "link": "https://www.romeoville.org/Calendar.aspx?EID=5703"
+  },
+  {
+    "title": "Wags & Waterworks",
+    "date": "August 23, 2025",
+    "time": "09:00 AM - 11:00 AM",
+    "location": "400 W Romeo Rd",
+    "link": "https://www.romeoville.org/1433/Wags-Waterworks"
+  },
+  {
+    "title": "Isle a la Cache Museum presents Museum Campus Day",
+    "date": "August 23, 2025",
+    "time": "10:00 AM - 04:00 PM",
+    "location": "501 E. Romeo Rd.",
+    "link": "https://www.romeoville.org/Calendar.aspx?EID=5478"
+  },
+  {
+    "title": "Vietnam Traveling Memorial Wall - Visiting Hours",
     "date": "August 24, 2025",
-    "time": "6:30 PM – 8:00 PM",
-    "location": "Village Hall"
+    "time": "07:00 AM - 08:00 PM",
+    "location": "1050 W. Romeo Rd.",
+    "link": "https://www.romeoville.org/Calendar.aspx?EID=5704"
+  },
+  {
+    "title": "ESL Reading & Conversation Group",
+    "date": "August 25, 2025",
+    "time": "11:00 AM - 12:00 PM",
+    "location": "201 W. Normantown Road",
+    "link": "https://www.romeoville.org/Calendar.aspx?EID=5590"
+  },
+  {
+    "title": "Pinochle Club",
+    "date": "August 26, 2025",
+    "time": "09:30 AM - 12:30 PM",
+    "location": "201 W. Normantown Road",
+    "link": "https://www.romeoville.org/Calendar.aspx?EID=5594"
+  },
+  {
+    "title": "State Representative Avelar's Traveling Office Hours",
+    "date": "August 26, 2025",
+    "time": "05:00 PM - 07:00 PM",
+    "location": "201 W. Normantown Road",
+    "link": "https://www.romeoville.org/Calendar.aspx?EID=5599"
+  },
+  {
+    "title": "Planning and Zoning Commission Meeting ",
+    "date": "August 26, 2025",
+    "time": "06:00 PM - 07:00 PM",
+    "location": "1050 W. Romeo Rd.",
+    "link": "https://www.romeoville.org/Calendar.aspx?EID=4889"
+  },
+  {
+    "title": "Ribbon Cutting Ceremony for MetroNet Business",
+    "date": "August 27, 2025",
+    "time": "09:00 AM - 10:00 AM",
+    "location": "Romeoville, IL 60446",
+    "link": "https://www.romeoville.org/Calendar.aspx?EID=5668"
+  },
+  {
+    "title": "White Oak Library presents Community Helper Storytime: Police Officer",
+    "date": "August 27, 2025",
+    "time": "10:00 AM - 11:00 AM",
+    "location": "201 W. Normantown Road",
+    "link": "https://www.romeoville.org/Calendar.aspx?EID=5618"
+  },
+  {
+    "title": "American Mahjong",
+    "date": "August 27, 2025",
+    "time": "12:30 PM - 02:30 PM",
+    "location": "201 W. Normantown Road",
+    "link": "https://www.romeoville.org/Calendar.aspx?EID=5598"
+  },
+  {
+    "title": "Chamber of Commerce Monthly Membership Meeting",
+    "date": "August 28, 2025",
+    "time": "08:15 AM - 09:45 AM",
+    "location": "1700 W. Renwick Rd.",
+    "link": "https://www.romeoville.org/Calendar.aspx?EID=5669"
+  },
+  {
+    "title": "White Oak Library presents \"Pigs, Pork, and Heartland Hogs: From Wild Boar to Baconfest\" with Cynthia Clampitt",
+    "date": "August 28, 2025",
+    "time": "07:00 PM - 08:30 PM",
+    "location": "201 W. Normantown Road",
+    "link": "https://www.romeoville.org/Calendar.aspx?EID=5619"
+  },
+  {
+    "title": "Rockin' the Ville: The Boy Band Night",
+    "date": "August 28, 2025",
+    "time": "07:00 PM - 09:00 PM",
+    "location": "1050 W Romeo Road",
+    "link": "https://www.romeoville.org/798/Rockin-the-Ville-Concert-Series"
+  },
+  {
+    "title": "Blood Drive",
+    "date": "August 29, 2025",
+    "time": "09:00 AM - 03:00 PM",
+    "location": "900 West Romeo Road",
+    "link": "https://www.romeoville.org/Calendar.aspx?EID=5371"
   }
 ]
