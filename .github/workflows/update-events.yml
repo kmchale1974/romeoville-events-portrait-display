@@ -1,12 +1,12 @@
 name: Update Events JSON
 
-permissions:
-  contents: write
-
 on:
   schedule:
-    - cron: "0 * * * *"   # every hour on the hour
-  workflow_dispatch:       # manual run button
+    - cron: "0 * * * *"   # every hour
+  workflow_dispatch:
+
+permissions:
+  contents: write
 
 jobs:
   build:
@@ -21,15 +21,18 @@ jobs:
           node-version: 20
 
       - name: Install dependencies
-        run: npm install rss-parser
+        run: npm install node-ical
 
-      - name: Fetch and build events.json
-        run: node .github/scripts/fetch-events.js
+      - name: Build events.json from ICS feeds
+        run: |
+          node .github/scripts/fetch-events-from-ics.js \
+            "https://www.romeoville.org/common/modules/iCalendar/iCalendar.aspx?catID=46&feed=calendar" \
+            "https://www.romeoville.org/common/modules/iCalendar/iCalendar.aspx?catID=14&feed=calendar"
 
       - name: Commit and push changes
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
           git add events.json
-          git commit -m "Update events.json [skip ci]" || echo "No changes to commit"
+          git commit -m "Update events.json (ICS merge) [skip ci]" || echo "No changes to commit"
           git push
