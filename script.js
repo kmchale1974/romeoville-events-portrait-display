@@ -2,11 +2,11 @@
   // ======= CONFIG =======
   const CONFIG = {
     EVENTS_URL: 'events.json',
-    EVENTS_PER_PAGE: 6,            // your current setting
-    MAX_EVENTS: 24,                // total cap
-    PAGE_DURATION_MS: 12_000,      // your current setting
-    REFRESH_EVERY_MINUTES: 60,
-    HARD_RELOAD_AT_MIDNIGHT: true,
+    EVENTS_PER_PAGE: 5,            // show 5 at a time
+    MAX_EVENTS: 20,                // total cap
+    PAGE_DURATION_MS: 12_000,      // 12 seconds per page
+    REFRESH_EVERY_MINUTES: 60,     // reload data hourly
+    HARD_RELOAD_AT_MIDNIGHT: true, // full reload after midnight
     TIMEZONE: Intl.DateTimeFormat().resolvedOptions().timeZone || 'America/Chicago'
   };
 
@@ -33,6 +33,7 @@
     let start = parseDateSafe(e.start);
     let end = parseDateSafe(e.end);
 
+    // Build start from legacy date/time if needed
     if (!start && e.date) {
       let startTimeStr = null;
       if (e.time && typeof e.time === 'string') {
@@ -43,13 +44,14 @@
       start = parseDateSafe(base);
     }
 
+    // Default end to +2 hours if missing
     if (!end && start) {
       end = new Date(start.getTime() + 2 * 60 * 60 * 1000);
     }
 
     return {
       title: e.title || 'Untitled Event',
-      location: e.location || 'TBA',
+      location: e.location, // may be undefined; we handle it when rendering
       displayDate: e.date || null,
       displayTime: e.time || null,
       start,
@@ -129,13 +131,14 @@
       const itemsHtml = group.map(e => {
         const dateStr = formatEventDate(e);
         const timeStr = formatEventTime(e);
-        const locStr = e.location || 'TBA';
+        const locLine = e.location ? `<div class="event-detail">Location: ${escapeHtml(e.location)}</div>` : '';
+
         return `
           <div class="event">
             <div class="event-title">${escapeHtml(e.title)}</div>
             <div class="event-detail">Date: ${escapeHtml(dateStr)}</div>
             <div class="event-detail">Time: ${escapeHtml(timeStr)}</div>
-            <div class="event-detail">Location: ${escapeHtml(locStr)}</div>
+            ${locLine}
           </div>
         `;
       }).join('');
@@ -189,13 +192,13 @@
     active.classList.add('tighter');
     if (fits()) return;
 
-    // Last resort: scale down to fit — do NOT widen (prevents right-edge clipping)
+    // Last resort: scale down to fit — keep width at 100% to avoid right-edge clipping
     const h = active.scrollHeight;
     const H = active.clientHeight;
     if (h > 0 && H > 0) {
       const scale = Math.min(1, Math.max(0.7, H / h)); // don’t shrink below 70%
       active.classList.add('scaled');
-      active.style.transform = `scale(${scale})`; // keep width at 100%
+      active.style.transform = `scale(${scale})`;
     }
   }
 
