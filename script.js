@@ -2,8 +2,8 @@
   // ======= CONFIG =======
   const CONFIG = {
     EVENTS_URL: 'events.json',
-    EVENTS_PER_PAGE: 5,            // your current setting
-    MAX_EVENTS: 20,                // total cap
+    EVENTS_PER_PAGE: 6,            // your current setting
+    MAX_EVENTS: 24,                // total cap
     PAGE_DURATION_MS: 12_000,      // your current setting
     REFRESH_EVERY_MINUTES: 60,
     HARD_RELOAD_AT_MIDNIGHT: true,
