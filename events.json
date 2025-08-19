@@ -1,12 +1,5 @@
 [
   {
-    "title": "Pinochle Club",
-    "date": "August 19, 2025",
-    "time": "09:30 AM - 12:30 PM",
-    "location": "201 W. Normantown Road",
-    "link": "https://www.romeoville.org/Calendar.aspx?EID=5593"
-  },
-  {
     "title": "Outdoor Zumba",
     "date": "August 19, 2025",
     "time": "07:30 PM - 08:30 PM",
@@ -222,5 +215,12 @@
     "time": "09:00 AM - 03:00 PM",
     "location": "900 West Romeo Road",
     "link": "https://www.romeoville.org/Calendar.aspx?EID=5371"
+  },
+  {
+    "title": "LEGO Club",
+    "date": "August 29, 2025",
+    "time": "03:00 PM - 04:30 PM",
+    "location": "201 W. Normantown Road",
+    "link": "https://www.romeoville.org/Calendar.aspx?EID=5603"
   }
 ]
