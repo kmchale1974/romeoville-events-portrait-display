@@ -16,7 +16,7 @@
 const fs = require("fs");
 const ical = require("node-ical");
 
-const MAX_EVENTS = 20;            // keep in sync with your front-end cap if desired
+const MAX_EVENTS = 24;            // keep in sync with your front-end cap if desired
 const OUTPUT_FILE = "events.json";
 
 /* ---------- Helpers ---------- */
