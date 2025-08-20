@@ -1,46 +1,45 @@
-(() => {
+(function () {
   // ======= CONFIG =======
-  const CONFIG = {
+  var CONFIG = {
     EVENTS_URL: 'events.json',
-    EVENTS_PER_PAGE: 6,            // show 6 at a time
-    MAX_EVENTS: 24,                // total cap
-    PAGE_DURATION_MS: 12_000,      // 12 seconds per page
-    REFRESH_EVERY_MINUTES: 60,     // reload data hourly
-    HARD_RELOAD_AT_MIDNIGHT: true, // full reload after midnight
-    TIMEZONE: Intl.DateTimeFormat().resolvedOptions().timeZone || 'America/Chicago'
+    EVENTS_PER_PAGE: 6,
+    MAX_EVENTS: 24,
+    PAGE_DURATION_MS: 12000,        // 12 seconds per page
+    REFRESH_EVERY_MINUTES: 60,      // reload data hourly
+    HARD_RELOAD_AT_MIDNIGHT: true,  // full reload after midnight
+    TIMEZONE: (Intl && Intl.DateTimeFormat ? Intl.DateTimeFormat().resolvedOptions().timeZone : null) || 'America/Chicago'
   };
 
-  let pages = [];
-  let currentPage = 0;
-  let rotateTimer = null;
+  var pages = [];
+  var currentPage = 0;
+  var rotateTimer = null;
 
-  const $pages = () => document.getElementById('pages');
-  const $status = () => document.getElementById('status');
+  function $pages(){ return document.getElementById('pages'); }
+  function $status(){ return document.getElementById('status'); }
 
-  const withCacheBust = (url) => {
-    const u = new URL(url, location.href);
-    u.searchParams.set('_', String(Date.now()));
-    return u.toString();
-  };
+  function withCacheBust(url){
+    var sep = url.indexOf('?') === -1 ? '?' : '&';
+    return url + sep + '_=' + Date.now();
+  }
 
-  function parseDateSafe(val) {
+  function parseDateSafe(val){
     if (!val) return null;
-    const d = new Date(val);
+    var d = new Date(val);
     return isNaN(d.getTime()) ? null : d;
   }
 
-  function normalizeEvent(e) {
-    let start = parseDateSafe(e.start);
-    let end = parseDateSafe(e.end);
+  function normalizeEvent(e){
+    var start = parseDateSafe(e.start);
+    var end = parseDateSafe(e.end);
 
     // Build start from legacy date/time if needed
     if (!start && e.date) {
-      let startTimeStr = null;
+      var startTimeStr = null;
       if (e.time && typeof e.time === 'string') {
-        const m = e.time.match(/(\d{1,2}:\d{2}\s*[AP]M)/i);
+        var m = e.time.match(/(\d{1,2}:\d{2}\s*[AP]M)/i);
         if (m) startTimeStr = m[1];
       }
-      const base = startTimeStr ? `${e.date} ${startTimeStr}` : e.date;
+      var base = startTimeStr ? (e.date + ' ' + startTimeStr) : e.date;
       start = parseDateSafe(base);
     }
 
@@ -51,99 +50,104 @@
 
     return {
       title: e.title || 'Untitled Event',
-      location: e.location, // may be undefined; we handle it when rendering
+      location: e.location, // may be undefined
       displayDate: e.date || null,
       displayTime: e.time || null,
-      start,
-      end,
+      start: start,
+      end: end
     };
   }
 
-  function formatEventDate(e) {
+  function formatEventDate(e){
     if (e.displayDate) return e.displayDate;
     if (e.start) {
-      const fmt = new Intl.DateTimeFormat('en-US', {
-        weekday: 'short',
-        month: 'short',
-        day: 'numeric',
-        year: 'numeric',
-        timeZone: CONFIG.TIMEZONE
-      });
-      return fmt.format(e.start);
+      try {
+        var fmt = new Intl.DateTimeFormat('en-US', {
+          weekday: 'short', month: 'short', day: 'numeric', year: 'numeric',
+          timeZone: CONFIG.TIMEZONE
+        });
+        return fmt.format(e.start);
+      } catch (_e) {}
     }
     return 'TBA';
   }
 
-  function formatEventTime(e) {
+  function formatEventTime(e){
     if (e.displayTime) return e.displayTime;
     if (e.start) {
-      const fmt = new Intl.DateTimeFormat('en-US', {
-        hour: 'numeric',
-        minute: '2-digit',
-        timeZone: CONFIG.TIMEZONE
-      });
-      const startStr = fmt.format(e.start);
-      if (e.end) {
-        const endStr = fmt.format(e.end);
-        return `${startStr} – ${endStr}`;
+      try {
+        var fmt = new Intl.DateTimeFormat('en-US', {
+          hour: 'numeric', minute: '2-digit', timeZone: CONFIG.TIMEZONE
+        });
+        var startStr = fmt.format(e.start);
+        if (e.end) {
+          var endStr = fmt.format(e.end);
+          return startStr + ' \u2013 ' + endStr;
+        }
+        return startStr;
+      } catch (_e) {
+        // Very old engines fallback
+        var s = e.start, h = s.getHours(), m = s.getMinutes();
+        var am = h < 12 ? 'AM' : 'PM'; h = h % 12; if (h === 0) h = 12;
+        if (m < 10) m = '0' + m;
+        var t = h + ':' + m + ' ' + am;
+        if (e.end) {
+          var ee = e.end, hh = ee.getHours(), mm = ee.getMinutes();
+          var aam = hh < 12 ? 'AM' : 'PM'; hh = hh % 12; if (hh === 0) hh = 12;
+          if (mm < 10) mm = '0' + mm;
+          t += ' \u2013 ' + (hh + ':' + mm + ' ' + aam);
+        }
+        return t;
       }
-      return startStr;
     }
     return 'TBA';
   }
 
-  function filterUpcoming(list) {
-    const now = new Date();
-    const sod = startOfDay(now).getTime();
-    return list.filter(e => {
+  function filterUpcoming(list){
+    var now = new Date();
+    var sod = startOfDay(now).getTime();
+    return list.filter(function(e){
       if (e.end) return e.end.getTime() >= sod;
       if (e.start) return e.start.getTime() >= sod;
       return true; // keep undated items
     });
   }
 
-  function startOfDay(d) {
-    return new Date(d.getFullYear(), d.getMonth(), d.getDate());
-  }
+  function startOfDay(d){ return new Date(d.getFullYear(), d.getMonth(), d.getDate()); }
 
-  function sortByStart(a, b) {
-    const at = a.start ? a.start.getTime() : Number.MAX_SAFE_INTEGER;
-    const bt = b.start ? b.start.getTime() : Number.MAX_SAFE_INTEGER;
+  function sortByStart(a, b){
+    var at = a.start ? a.start.getTime() : 9007199254740991; // MAX_SAFE_INTEGER-ish
+    var bt = b.start ? b.start.getTime() : 9007199254740991;
     return at - bt;
   }
 
-  function chunk(arr, size) {
-    const out = [];
-    for (let i = 0; i < arr.length; i += size) {
-      out.push(arr.slice(i, i + size));
-    }
+  function chunk(arr, size){
+    var out = [], i = 0;
+    for (; i < arr.length; i += size) out.push(arr.slice(i, i + size));
     return out;
   }
 
-  function setStatus(msg) {
-    const el = $status();
+  function setStatus(msg){
+    var el = $status();
     if (el) el.textContent = msg || '';
   }
 
-  function renderPaged(events) {
-    const groups = chunk(events, CONFIG.EVENTS_PER_PAGE);
-    pages = groups.map(group => {
-      const itemsHtml = group.map(e => {
-        const dateStr = formatEventDate(e);
-        const timeStr = formatEventTime(e);
-        const locLine = e.location ? `<div class="event-detail">Location: ${escapeHtml(e.location)}</div>` : '';
-
-        return `
-          <div class="event">
-            <div class="event-title">${escapeHtml(e.title)}</div>
-            <div class="event-detail">Date: ${escapeHtml(dateStr)}</div>
-            <div class="event-detail">Time: ${escapeHtml(timeStr)}</div>
-            ${locLine}
-          </div>
-        `;
+  function renderPaged(events){
+    var groups = chunk(events, CONFIG.EVENTS_PER_PAGE);
+    pages = groups.map(function(group){
+      var itemsHtml = group.map(function(e){
+        var dateStr = formatEventDate(e);
+        var timeStr = formatEventTime(e);
+        var locLine = e.location ? '<div class="event-detail">Location: ' + escapeHtml(e.location) + '</div>' : '';
+        return ''
+          + '<div class="event">'
+          +   '<div class="event-title">' + escapeHtml(e.title) + '</div>'
+          +   '<div class="event-detail">Date: ' + escapeHtml(dateStr) + '</div>'
+          +   '<div class="event-detail">Time: ' + escapeHtml(timeStr) + '</div>'
+          +   locLine
+          + '</div>';
       }).join('');
-
-      return `<div class="page">${itemsHtml}</div>`;
+      return '<div class="page">' + itemsHtml + '</div>';
     });
 
     $pages().innerHTML = pages.join('');
@@ -151,22 +155,25 @@
     updateActivePage();
   }
 
-  function updateActivePage() {
-    const pageEls = Array.from(document.querySelectorAll('.page'));
-    pageEls.forEach((el, i) => el.classList.toggle('active', i === currentPage));
-    fitActivePage(); // ensure it fits
+  function updateActivePage(){
+    var pageEls = Array.prototype.slice.call(document.querySelectorAll('.page'));
+    pageEls.forEach(function(el, i){
+      if (i === currentPage) el.classList.add('active');
+      else el.classList.remove('active');
+    });
+    fitActivePage();
   }
 
-  function startRotation() {
+  function startRotation(){
     stopRotation();
     if (pages.length <= 1) return;
-    rotateTimer = setInterval(() => {
+    rotateTimer = setInterval(function(){
       currentPage = (currentPage + 1) % pages.length;
       updateActivePage();
     }, CONFIG.PAGE_DURATION_MS);
   }
 
-  function stopRotation() {
+  function stopRotation(){
     if (rotateTimer) {
       clearInterval(rotateTimer);
       rotateTimer = null;
@@ -174,15 +181,14 @@
   }
 
   // Auto-fit: step down sizes; if still too tall, scale the page without widening
-  function fitActivePage() {
-    const active = document.querySelector('.page.active');
+  function fitActivePage(){
+    var active = document.querySelector('.page.active');
     if (!active) return;
 
-    // reset fit classes and any existing transform before measuring
     active.classList.remove('tight', 'tighter', 'scaled');
     active.style.transform = '';
 
-    const fits = () => active.scrollHeight <= active.clientHeight;
+    function fits(){ return active.scrollHeight <= active.clientHeight; }
 
     if (fits()) return;
 
@@ -192,69 +198,99 @@
     active.classList.add('tighter');
     if (fits()) return;
 
-    // Last resort: scale down to fit — keep width at 100% to avoid right-edge clipping
-    const h = active.scrollHeight;
-    const H = active.clientHeight;
+    var h = active.scrollHeight;
+    var H = active.clientHeight;
     if (h > 0 && H > 0) {
-      const scale = Math.min(1, Math.max(0.7, H / h)); // don’t shrink below 70%
+      var scale = Math.min(1, Math.max(0.7, H / h)); // don’t shrink below 70%
       active.classList.add('scaled');
-      active.style.transform = `scale(${scale})`;
+      active.style.transform = 'scale(' + scale + ')';
     }
   }
 
-  async function loadAndRender() {
+  // --------- Networking (fetch with XHR fallback) ----------
+  function getJson(url){
+    url = withCacheBust(url);
+    if (typeof fetch === 'function') {
+      return fetch(url, { cache: 'no-store' }).then(function(res){
+        if (!res.ok) throw new Error('HTTP ' + res.status);
+        return res.json();
+      });
+    }
+    // XHR fallback
+    return new Promise(function(resolve, reject){
+      try {
+        var xhr = new XMLHttpRequest();
+        xhr.open('GET', url, true);
+        xhr.responseType = 'json';
+        xhr.onreadystatechange = function(){
+          if (xhr.readyState === 4) {
+            if (xhr.status >= 200 && xhr.status < 300) {
+              if (xhr.response && typeof xhr.response === 'object') {
+                resolve(xhr.response);
+              } else {
+                try { resolve(JSON.parse(xhr.responseText)); }
+                catch (e){ reject(e); }
+              }
+            } else {
+              reject(new Error('HTTP ' + xhr.status));
+            }
+          }
+        };
+        xhr.send();
+      } catch (e) { reject(e); }
+    });
+  }
+
+  async function loadAndRender(){
     setStatus('Loading…');
     try {
-      const res = await fetch(withCacheBust(CONFIG.EVENTS_URL), { cache: 'no-store' });
-      if (!res.ok) throw new Error(`HTTP ${res.status}`);
-      const raw = await res.json();
-
-      const norm = (Array.isArray(raw) ? raw : []).map(normalizeEvent);
-      const upcoming = filterUpcoming(norm).sort(sortByStart).slice(0, CONFIG.MAX_EVENTS);
+      var raw = await getJson(CONFIG.EVENTS_URL);
+      var norm = (Array.isArray(raw) ? raw : []).map(normalizeEvent);
+      var upcoming = filterUpcoming(norm).sort(sortByStart).slice(0, CONFIG.MAX_EVENTS);
 
       renderPaged(upcoming);
       startRotation();
 
-      const count = upcoming.length;
-      setStatus(`${count} upcoming event${count === 1 ? '' : 's'} • updated ${new Date().toLocaleTimeString()}`);
+      var count = upcoming.length;
+      setStatus(count + ' upcoming event' + (count === 1 ? '' : 's') + ' • updated ' + new Date().toLocaleTimeString());
     } catch (err) {
       console.error('Load error:', err);
       setStatus('Failed to load events.');
       $pages().innerHTML =
-        `<div class="page active"><div class="event"><div class="event-title">No upcoming events found.</div></div></div>`;
+        '<div class="page active"><div class="event"><div class="event-title">No upcoming events found.</div></div></div>';
     } finally {
       fitActivePage();
     }
   }
 
-  function scheduleHourlyRefresh() {
-    const ms = CONFIG.REFRESH_EVERY_MINUTES * 60 * 1000;
-    setInterval(async () => {
-      await loadAndRender();
-      fitActivePage();
+  function scheduleHourlyRefresh(){
+    var ms = CONFIG.REFRESH_EVERY_MINUTES * 60 * 1000;
+    setInterval(function(){
+      loadAndRender().then(fitActivePage);
     }, ms);
   }
 
-  function scheduleMidnightReload() {
+  function scheduleMidnightReload(){
     if (!CONFIG.HARD_RELOAD_AT_MIDNIGHT) return;
-    const now = new Date();
-    const next = new Date(now);
+    var now = new Date();
+    var next = new Date(now.getTime());
     next.setHours(24, 0, 2, 0); // ~2s after midnight
-    const delay = next.getTime() - now.getTime();
-    setTimeout(() => location.reload(), delay);
+    var delay = next.getTime() - now.getTime();
+    setTimeout(function(){ location.reload(); }, delay);
   }
 
-  function escapeHtml(s) {
-    return String(s)
-      .replaceAll('&', '&amp;')
-      .replaceAll('<', '&lt;')
-      .replaceAll('>', '&gt;')
-      .replaceAll('"', '&quot;')
-      .replaceAll("'", '&#39;');
+  function escapeHtml(s){
+    s = String(s);
+    s = s.replace(/&/g, '&amp;');
+    s = s.replace(/</g, '&lt;');
+    s = s.replace(/>/g, '&gt;');
+    s = s.replace(/"/g, '&quot;');
+    s = s.replace(/'/g, '&#39;');
+    return s;
   }
 
-  window.addEventListener('load', async () => {
-    await loadAndRender();
+  window.addEventListener('load', function(){
+    loadAndRender();
     scheduleHourlyRefresh();
     scheduleMidnightReload();
     window.addEventListener('resize', fitActivePage);
