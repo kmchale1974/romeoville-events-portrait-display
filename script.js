@@ -1,28 +1,51 @@
-// Remote-only (set EVENTS_URL for site) OR keep as-is for HTML App
 (function () {
   var CONFIG = {
     EVENTS_URL: "https://kmchale1974.github.io/romeoville-events-portrait-display/events.json",
     EVENTS_PER_PAGE: 6,
     MAX_EVENTS: 24,
-    PAGE_INTERVAL_MS: 12000,      // no numeric separators
+    PAGE_INTERVAL_MS: 12000,
     REFRESH_EVERY_MINUTES: 60,
     TIMEZONE: "America/Chicago"
   };
 
   function $(id){ return document.getElementById(id); }
+  function containerEl(){
+    return $("pages") || $("events-container") || document.body;
+  }
 
-  // --- Date/format helpers (no optional chaining) ---
+  function showError(msg){
+    var el = containerEl();
+    el.innerHTML =
+      '<div class="page"><div class="event"><div class="event-title" '+
+      'style="font:700 28px Arial; color:#b00;">' + escapeHtml(msg) +
+      '</div></div></div>';
+  }
+
   function fmtDate(d){
-    return new Intl.DateTimeFormat("en-US", {
-      weekday: "short", month: "short", day: "numeric", year: "numeric",
-      timeZone: CONFIG.TIMEZONE
-    }).format(d);
+    try {
+      return new Intl.DateTimeFormat("en-US", {
+        weekday: "short", month: "short", day: "numeric", year: "numeric",
+        timeZone: CONFIG.TIMEZONE
+      }).format(d);
+    } catch (_e) {
+      // Fallback
+      return (d.getMonth()+1) + "/" + d.getDate() + "/" + d.getFullYear();
+    }
   }
   function fmtTime(d){
-    return new Intl.DateTimeFormat("en-US", {
-      hour: "numeric", minute: "2-digit", timeZone: CONFIG.TIMEZONE
-    }).format(d);
+    try {
+      return new Intl.DateTimeFormat("en-US", {
+        hour: "numeric", minute: "2-digit", timeZone: CONFIG.TIMEZONE
+      }).format(d);
+    } catch (_e) {
+      var h = d.getHours(), m = d.getMinutes();
+      var am = h < 12 ? "AM" : "PM";
+      h = h % 12; if (h === 0) h = 12;
+      if (m < 10) m = "0" + m;
+      return h + ":" + m + " " + am;
+    }
   }
+
   function parseDateSafe(v){
     var d = new Date(v);
     return isNaN(d.getTime()) ? null : d;
@@ -51,7 +74,7 @@
   }
 
   function byStart(a,b){
-    var at = a.start ? a.start.getTime() : 9007199254740991; // Number.MAX_SAFE_INTEGER
+    var at = a.start ? a.start.getTime() : 9007199254740991;
     var bt = b.start ? b.start.getTime() : 9007199254740991;
     return at - bt;
   }
@@ -64,7 +87,6 @@
 
   function escapeHtml(s){
     s = String(s);
-    // avoid replaceAll; use regex global
     s = s.replace(/&/g, "&amp;");
     s = s.replace(/</g, "&lt;");
     s = s.replace(/>/g, "&gt;");
@@ -73,26 +95,19 @@
     return s;
   }
 
-  function withCacheBust(url){
-    try {
-      var u = new URL(url, location.href);
-      u.searchParams.set("_", String(Date.now()));
-      return u.toString();
-    } catch (_e) {
-      // very old engines: manual fallback
-      var sep = url.indexOf("?") === -1 ? "?" : "&";
-      return url + sep + "_=" + Date.now();
-    }
+  function cacheBust(url){
+    var sep = url.indexOf("?") === -1 ? "?" : "&";
+    return url + sep + "_=" + Date.now();
   }
 
   function renderPages(events){
-    var container = $("events-container") || $("pages") || document.body; // support both app/site
+    var el = containerEl();
     var groups = chunk(events, CONFIG.EVENTS_PER_PAGE);
     var pages = groups.map(function(group){
       var html = group.map(function(e){
         var dateStr = e.start ? fmtDate(e.start) : "TBA";
         var timeStr = e.start ? (e.end ? (fmtTime(e.start) + " – " + fmtTime(e.end)) : fmtTime(e.start)) : "TBA";
-        var locLine = e.location ? '<div class="event-detail event-location">Location: '+ escapeHtml(e.location) +'</div>' : '';
+        var locLine = e.location ? '<div class="event-detail">Location: ' + escapeHtml(e.location) + '</div>' : '';
         return '' +
           '<div class="event">' +
             '<div class="event-title">' + escapeHtml(e.title) + '</div>' +
@@ -104,36 +119,37 @@
       return '<div class="page">' + html + '</div>';
     });
 
-    // simple pager
     var i = 0;
-    container.innerHTML = pages[0] || "";
+    el.innerHTML = pages[0] || '<div class="page"><div class="event"><div class="event-title">No events.</div></div></div>';
+
     if (window.__rotationTimer) clearInterval(window.__rotationTimer);
     if (pages.length > 1){
       window.__rotationTimer = setInterval(function(){
         i = (i + 1) % pages.length;
-        container.innerHTML = pages[i];
+        el.innerHTML = pages[i];
       }, CONFIG.PAGE_INTERVAL_MS);
     }
   }
 
   function loadAndRender(){
-    var url = withCacheBust(CONFIG.EVENTS_URL);
+    var url = cacheBust(CONFIG.EVENTS_URL);
     return fetch(url, { cache: "no-store" })
       .then(function(res){
-        if (!res.ok) throw new Error("HTTP "+res.status);
+        if (!res.ok) throw new Error("HTTP " + res.status);
         return res.json();
       })
       .then(function(json){
-        if (!Array.isArray(json)) throw new Error("Invalid events JSON");
+        if (!json || !json.length) {
+          showError("No events available.");
+          return;
+        }
         var norm = json.map(normalize);
         var upcoming = filterUpcoming(norm).sort(byStart).slice(0, CONFIG.MAX_EVENTS);
         renderPages(upcoming);
       })
       .catch(function(err){
         console.error("Load failed:", err);
-        var container = $("events-container") || $("pages") || document.body;
-        container.innerHTML =
-          '<div class="page"><div class="event"><div class="event-title">No events available (offline).</div></div></div>';
+        showError("Failed to load events.");
       });
   }
 
