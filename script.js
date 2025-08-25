@@ -4,8 +4,8 @@
     EVENTS_URL: 'events.json',
     EVENTS_PER_PAGE: 4,
     MAX_EVENTS: 24,
-    DISPLAY_MS: 12000,            // visible time per page
-    FADE_MS: 900,                 // must match --fade-ms in CSS
+    DISPLAY_MS: 12000,             // fully visible time per page
+    FADE_MS: 900,                  // match --fade-ms in CSS
     REFRESH_EVERY_MINUTES: 60,
     HARD_RELOAD_AT_MIDNIGHT: true,
     TIMEZONE: (Intl && Intl.DateTimeFormat ? Intl.DateTimeFormat().resolvedOptions().timeZone : null) || 'America/Chicago'
@@ -18,50 +18,58 @@
   function $pages(){ return document.getElementById('pages'); }
   function $status(){ return document.getElementById('status'); }
 
-  function ensureVeil(){
-    var root = $pages();
-    if (!root) return null;
-    var v = document.getElementById('veil');
-    if (!v) { v = document.createElement('div'); v.id = 'veil'; root.appendChild(v); }
-    return v;
-  }
-
   function withCacheBust(url){ var sep = url.indexOf('?') === -1 ? '?' : '&'; return url + sep + '_=' + Date.now(); }
-
   function parseDateSafe(val){ if (!val) return null; var d = new Date(val); return isNaN(d.getTime()) ? null : d; }
 
   function normalizeEvent(e){
     var start = parseDateSafe(e.start);
     var end = parseDateSafe(e.end);
-    if (!start && e.date){
+
+    // Build start from legacy date/time if needed
+    if (!start && e.date) {
       var startTimeStr = null;
-      if (e.time && typeof e.time === 'string'){ var m = e.time.match(/(\d{1,2}:\d{2}\s*[AP]M)/i); if (m) startTimeStr = m[1]; }
+      if (e.time && typeof e.time === 'string') {
+        var m = e.time.match(/(\d{1,2}:\d{2}\s*[AP]M)/i);
+        if (m) startTimeStr = m[1];
+      }
       var base = startTimeStr ? (e.date + ' ' + startTimeStr) : e.date;
       start = parseDateSafe(base);
     }
-    if (!end && start) end = new Date(start.getTime() + 2*60*60*1000);
-    return { title: e.title || 'Untitled Event', location: e.location, displayDate: e.date || null, displayTime: e.time || null, start: start, end: end };
+
+    if (!end && start) end = new Date(start.getTime() + 2 * 60 * 60 * 1000);
+
+    return {
+      title: e.title || 'Untitled Event',
+      location: e.location,
+      displayDate: e.date || null,
+      displayTime: e.time || null,
+      start: start,
+      end: end
+    };
   }
 
   function formatEventDate(e){
     if (e.displayDate) return e.displayDate;
-    if (e.start){
+    if (e.start) {
       try {
-        return new Intl.DateTimeFormat('en-US', { weekday:'short', month:'short', day:'numeric', year:'numeric', timeZone: CONFIG.TIMEZONE }).format(e.start);
-      } catch (_e){}
+        return new Intl.DateTimeFormat('en-US', {
+          weekday:'short', month:'short', day:'numeric', year:'numeric',
+          timeZone: CONFIG.TIMEZONE
+        }).format(e.start);
+      } catch (_e) {}
     }
     return 'TBA';
   }
 
   function formatEventTime(e){
     if (e.displayTime) return e.displayTime;
-    if (e.start){
+    if (e.start) {
       try {
         var fmt = new Intl.DateTimeFormat('en-US', { hour:'numeric', minute:'2-digit', timeZone: CONFIG.TIMEZONE });
         var s = fmt.format(e.start);
-        if (e.end){ var en = fmt.format(e.end); return s + ' \u2013 ' + en; }
+        if (e.end) return s + ' \u2013 ' + fmt.format(e.end);
         return s;
-      } catch (_e){
+      } catch (_e) {
         var d = e.start, h=d.getHours(), m=d.getMinutes(), am=h<12?'AM':'PM'; h=h%12; if(h===0)h=12; if(m<10)m='0'+m;
         var out = h+':'+m+' '+am;
         if (e.end){ var de=e.end, hh=de.getHours(), mm=de.getMinutes(), aam=hh<12?'AM':'PM'; hh=hh%12; if(hh===0)hh=12; if(mm<10)mm='0'+mm; out += ' \u2013 '+hh+':'+mm+' '+aam; }
@@ -78,14 +86,18 @@
   }
 
   function sortByStart(a,b){ var at=a.start?a.start.getTime():9007199254740991; var bt=b.start?b.start.getTime():9007199254740991; return at-bt; }
-
   function chunk(arr,n){ var out=[],i=0; for(;i<arr.length;i+=n) out.push(arr.slice(i,i+n)); return out; }
 
   function setStatus(msg){ var el=$status(); if(el) el.textContent=msg||''; }
 
-  function escapeHtml(s){ s=String(s); s=s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;'); return s; }
+  function escapeHtml(s){
+    s = String(s);
+    s = s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')
+         .replace(/"/g,'&quot;').replace(/'/g,'&#39;');
+    return s;
+  }
 
-  // Build all pages and inject to DOM (hidden by default)
+  // ---- Render ALL pages into the DOM (hidden by default) ----
   function renderPaged(events){
     var groups = chunk(events, CONFIG.EVENTS_PER_PAGE);
     pagesHtml = groups.map(function(group){
@@ -103,51 +115,67 @@
       }).join('');
       return '<div class="page">'+items+'</div>';
     });
+
     $pages().innerHTML = pagesHtml.join('');
-    ensureVeil();
     currentPage = 0;
-    showOnly(currentPage); // make the first page visible (no fade yet; veil controls fades)
+    showOnly(currentPage, true);   // show first page and fade in
     fitActivePage();
   }
 
-  function showOnly(idx){
+  // Show index; if doFadeIn, run fade-in; otherwise just show
+  function showOnly(idx, doFadeIn){
     var nodes = Array.prototype.slice.call(document.querySelectorAll('.page'));
     for (var i=0;i<nodes.length;i++){
-      if (i===idx) nodes[i].classList.add('active');
-      else nodes[i].classList.remove('active');
+      var n = nodes[i];
+      n.classList.remove('fade-in','fade-out','show');
+      if (i === idx) {
+        n.classList.add('show');          // layout visible
+        if (doFadeIn) {
+          // ensure the browser registers opacity 0 before switching to 1
+          requestAnimationFrame(function(){ n.classList.add('fade-in'); });
+        } else {
+          n.classList.add('fade-in');     // immediately visible
+        }
+      }
     }
   }
 
-  // ---- Fade timeline: fade in -> display -> fade out -> switch -> repeat ----
+  // Fade the current page out fully, then callback
+  function fadeOutCurrent(callback){
+    var nodes = Array.prototype.slice.call(document.querySelectorAll('.page'));
+    var cur = nodes[currentPage];
+    if (!cur) { if (callback) callback(); return; }
+    // start fade out
+    cur.classList.remove('fade-in');
+    cur.classList.add('fade-out');
+    // after fade duration, hide it and continue
+    setTimeout(function(){
+      cur.classList.remove('fade-out','show');
+      if (callback) callback();
+    }, CONFIG.FADE_MS);
+  }
+
+  // ---- Full timeline: fade in -> display -> fade out -> switch -> repeat ----
   function startCycle(){
     stopCycle();
-    var veil = ensureVeil();
-    if (!veil) return;
 
-    // Start black, then fade up first page
-    veil.classList.add('show');
-    setTimeout(function(){ // after black is up
-      showOnly(currentPage);
-      setTimeout(function(){ veil.classList.remove('show'); }, 30); // fade up
-      // schedule the loop after fade-in completes + display time
-      cycleTimer = setTimeout(loop, CONFIG.FADE_MS + CONFIG.DISPLAY_MS);
-    }, 10);
+    // ensure first page is visible and fully faded in
+    showOnly(currentPage, true);
+
+    // schedule first loop after initial display time
+    cycleTimer = setTimeout(loop, CONFIG.DISPLAY_MS + CONFIG.FADE_MS);
 
     function loop(){
-      // 1) Fade to black
-      veil.classList.add('show');
-      cycleTimer = setTimeout(function(){
-        // 2) Switch page while fully black
+      // 1) fade out current completely
+      fadeOutCurrent(function(){
+        // 2) switch page index
         currentPage = (currentPage + 1) % pagesHtml.length;
-        showOnly(currentPage);
+        // 3) show next and fade in
+        showOnly(currentPage, true);
         fitActivePage();
-        // 3) Fade up next page
-        setTimeout(function(){
-          veil.classList.remove('show');
-          // 4) Wait for fade-in + display time, then repeat
-          cycleTimer = setTimeout(loop, CONFIG.FADE_MS + CONFIG.DISPLAY_MS);
-        }, 30);
-      }, CONFIG.FADE_MS);
+        // 4) schedule next loop after fade-in + display time
+        cycleTimer = setTimeout(loop, CONFIG.DISPLAY_MS + CONFIG.FADE_MS);
+      });
     }
   }
 
@@ -184,7 +212,7 @@
       var norm = (Array.isArray(raw)?raw:[]).map(normalizeEvent);
       var upcoming = filterUpcoming(norm).sort(sortByStart).slice(0, CONFIG.MAX_EVENTS);
       if (!upcoming.length){
-        $pages().innerHTML = '<div class="page active"><div class="event"><div class="event-title">No upcoming events found.</div></div></div>';
+        $pages().innerHTML = '<div class="page show fade-in"><div class="event"><div class="event-title">No upcoming events found.</div></div></div>';
         return;
       }
       renderPaged(upcoming);
@@ -193,7 +221,7 @@
     }catch(err){
       console.error('Load error:', err);
       setStatus('Failed to load events.');
-      $pages().innerHTML = '<div class="page active"><div class="event"><div class="event-title">Failed to load events.</div></div></div>';
+      $pages().innerHTML = '<div class="page show fade-in"><div class="event"><div class="event-title">Failed to load events.</div></div></div>';
     } finally {
       fitActivePage();
     }
@@ -201,9 +229,7 @@
 
   function scheduleHourlyRefresh(){
     var ms = CONFIG.REFRESH_EVERY_MINUTES * 60 * 1000;
-    setInterval(function(){
-      loadAndRender();
-    }, ms);
+    setInterval(function(){ loadAndRender(); }, ms);
   }
 
   function scheduleMidnightReload(){
@@ -215,18 +241,29 @@
     setTimeout(function(){ location.reload(); }, delay);
   }
 
-  // Fit logic (same as before)
+  // Auto-fit logic (unchanged)
   function fitActivePage(){
-    var active = document.querySelector('.page.active');
+    var active = document.querySelector('.page.show');
     if (!active) return;
+
     active.classList.remove('tight','tighter','scaled');
     active.style.transform='';
+
     function fits(){ return active.scrollHeight <= active.clientHeight; }
     if (fits()) return;
-    active.classList.add('tight'); if (fits()) return;
-    active.classList.add('tighter'); if (fits()) return;
+
+    active.classList.add('tight');
+    if (fits()) return;
+
+    active.classList.add('tighter');
+    if (fits()) return;
+
     var h=active.scrollHeight, H=active.clientHeight;
-    if (h>0 && H>0){ var scale=Math.min(1, Math.max(0.7, H/h)); active.classList.add('scaled'); active.style.transform='scale('+scale+')'; }
+    if (h>0 && H>0){
+      var scale=Math.min(1, Math.max(0.7, H/h)); /* don’t shrink below 70% */
+      active.classList.add('scaled');
+      active.style.transform='scale('+scale+')';
+    }
   }
 
   window.addEventListener('load', function(){
