@@ -2,7 +2,7 @@
   // ======= CONFIG =======
   var CONFIG = {
     EVENTS_URL: 'events.json',
-    EVENTS_PER_PAGE: 6,
+    EVENTS_PER_PAGE: 4,
     MAX_EVENTS: 24,
     PAGE_DURATION_MS: 12000,        // 12 seconds per page
     REFRESH_EVERY_MINUTES: 60,      // reload data hourly
