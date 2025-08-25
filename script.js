@@ -4,10 +4,11 @@
     EVENTS_URL: 'events.json',
     EVENTS_PER_PAGE: 4,            // 4 per page
     MAX_EVENTS: 24,                // total cap
-    PAGE_DURATION_MS: 12000,       // 12 seconds per page
+    PAGE_DURATION_MS: 12000,       // visible time per page (fade time adds on top)
     REFRESH_EVERY_MINUTES: 60,     // reload data hourly
     HARD_RELOAD_AT_MIDNIGHT: true, // full reload after midnight
-    TIMEZONE: (Intl && Intl.DateTimeFormat ? Intl.DateTimeFormat().resolvedOptions().timeZone : null) || 'America/Chicago'
+    TIMEZONE: (Intl && Intl.DateTimeFormat ? Intl.DateTimeFormat().resolvedOptions().timeZone : null) || 'America/Chicago',
+    FADE_MS: 900                   // must match --fade-ms in CSS
   };
 
   var pagesHtml = [];   // array of page HTML strings
@@ -16,6 +17,19 @@
 
   function $pages(){ return document.getElementById('pages'); }
   function $status(){ return document.getElementById('status'); }
+
+  // Ensure the black veil exists
+  function ensureVeil(){
+    var root = $pages();
+    if (!root) return null;
+    var v = document.getElementById('veil');
+    if (!v) {
+      v = document.createElement('div');
+      v.id = 'veil';
+      root.appendChild(v);
+    }
+    return v;
+  }
 
   function withCacheBust(url){
     var sep = url.indexOf('?') === -1 ? '?' : '&';
@@ -137,7 +151,7 @@
     return s;
   }
 
-  // Render ALL pages into the DOM (for cross-fade)
+  // Render ALL pages into the DOM (we switch instantly; the veil handles fading)
   function renderPaged(events){
     var groups = chunk(events, CONFIG.EVENTS_PER_PAGE);
     pagesHtml = groups.map(function(group){
@@ -157,11 +171,12 @@
     });
 
     $pages().innerHTML = pagesHtml.join('');
+    ensureVeil();
     currentPage = 0;
     updateActivePage();
   }
 
-  // Toggle .active to cross-fade
+  // Toggle .active (no cross-fade)
   function updateActivePage(){
     var all = Array.prototype.slice.call(document.querySelectorAll('.page'));
     for (var i = 0; i < all.length; i++) {
@@ -174,10 +189,31 @@
   function startRotation(){
     stopRotation();
     if (pagesHtml.length <= 1) return;
-    rotateTimer = setInterval(function(){
-      currentPage = (currentPage + 1) % pagesHtml.length;
-      updateActivePage();
-    }, CONFIG.PAGE_DURATION_MS);
+
+    var veil = ensureVeil();
+    var fade = CONFIG.FADE_MS;
+
+    // One cycle: wait PAGE_DURATION_MS, fade to black, switch page, fade up
+    function cycle(){
+      // Fade to black
+      if (veil) veil.classList.add('show');
+
+      setTimeout(function(){
+        // Switch page while black
+        currentPage = (currentPage + 1) % pagesHtml.length;
+        updateActivePage();
+
+        // Give layout a tick, then fade up
+        setTimeout(function(){
+          if (veil) veil.classList.remove('show');
+        }, 30);
+      }, fade);
+    }
+
+    // Kick off repeating cycle
+    rotateTimer = setInterval(cycle, CONFIG.PAGE_DURATION_MS + fade + 50);
+    // Also run the first cycle after the first visible stint
+    setTimeout(cycle, CONFIG.PAGE_DURATION_MS);
   }
 
   function stopRotation(){
