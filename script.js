@@ -1,19 +1,27 @@
 (function () {
   // ======= CONFIG =======
   var CONFIG = {
-    EVENTS_URL: 'events.json',
-    EVENTS_PER_PAGE: 4,
-    MAX_EVENTS: 24,
-    DISPLAY_MS: 12000,             // fully visible time per page
-    FADE_MS: 900,                  // match --fade-ms in CSS
-    REFRESH_EVERY_MINUTES: 60,
-    HARD_RELOAD_AT_MIDNIGHT: true,
+    EVENTS_URL: 'events.json',      // same-folder JSON
+    EVENTS_PER_PAGE: 4,             // show 4 per page
+    MAX_EVENTS: 24,                 // total cap
+    DISPLAY_MS: 12000,              // fully visible time per page
+    FADE_MS: 900,                   // match --fade-ms in CSS
+    REFRESH_EVERY_MINUTES: 60,      // reload data hourly
+    HARD_RELOAD_AT_MIDNIGHT: true,  // full reload after midnight
     TIMEZONE: (Intl && Intl.DateTimeFormat ? Intl.DateTimeFormat().resolvedOptions().timeZone : null) || 'America/Chicago'
   };
 
   var pagesHtml = [];
   var currentPage = 0;
   var cycleTimer = null;
+
+  // Show JS errors on screen so it never looks "blank"
+  window.onerror = function (msg) {
+    try {
+      var s = document.getElementById('status');
+      if (s) s.textContent = 'Error: ' + msg;
+    } catch (_e) {}
+  };
 
   function $pages(){ return document.getElementById('pages'); }
   function $status(){ return document.getElementById('status'); }
@@ -25,7 +33,7 @@
     var start = parseDateSafe(e.start);
     var end = parseDateSafe(e.end);
 
-    // Build start from legacy date/time if needed
+    // Legacy support (date/time fields)
     if (!start && e.date) {
       var startTimeStr = null;
       if (e.time && typeof e.time === 'string') {
@@ -116,64 +124,62 @@
       return '<div class="page">'+items+'</div>';
     });
 
+    // Inject content
     $pages().innerHTML = pagesHtml.join('');
     currentPage = 0;
-    showOnly(currentPage, true);   // show first page and fade in
+
+    // Show first page (fade in)
+    showOnly(currentPage, true);
     fitActivePage();
   }
 
-  // Show index; if doFadeIn, run fade-in; otherwise just show
+  // Show index; if doFadeIn, run fade-in; otherwise just show visible
   function showOnly(idx, doFadeIn){
     var nodes = Array.prototype.slice.call(document.querySelectorAll('.page'));
     for (var i=0;i<nodes.length;i++){
       var n = nodes[i];
       n.classList.remove('fade-in','fade-out','show');
       if (i === idx) {
-        n.classList.add('show');          // layout visible
+        n.classList.add('show'); // layout visible at opacity:0
         if (doFadeIn) {
-          // ensure the browser registers opacity 0 before switching to 1
-          requestAnimationFrame(function(){ n.classList.add('fade-in'); });
+          // Force a reflow so the next class change animates cleanly
+          void n.offsetWidth;
+          n.classList.add('fade-in');  // fade from 0 -> 1
         } else {
-          n.classList.add('fade-in');     // immediately visible
+          n.classList.add('fade-in');  // immediately visible
         }
       }
     }
   }
 
-  // Fade the current page out fully, then callback
+  // Fade the current page out fully, then callback to switch
   function fadeOutCurrent(callback){
     var nodes = Array.prototype.slice.call(document.querySelectorAll('.page'));
     var cur = nodes[currentPage];
     if (!cur) { if (callback) callback(); return; }
-    // start fade out
     cur.classList.remove('fade-in');
     cur.classList.add('fade-out');
-    // after fade duration, hide it and continue
     setTimeout(function(){
       cur.classList.remove('fade-out','show');
       if (callback) callback();
     }, CONFIG.FADE_MS);
   }
 
-  // ---- Full timeline: fade in -> display -> fade out -> switch -> repeat ----
+  // ---- Full timeline: fade in → display → fade out → switch → repeat ----
   function startCycle(){
     stopCycle();
 
     // ensure first page is visible and fully faded in
     showOnly(currentPage, true);
 
-    // schedule first loop after initial display time
+    // schedule first loop after initial display+fade-in
     cycleTimer = setTimeout(loop, CONFIG.DISPLAY_MS + CONFIG.FADE_MS);
 
     function loop(){
-      // 1) fade out current completely
       fadeOutCurrent(function(){
-        // 2) switch page index
         currentPage = (currentPage + 1) % pagesHtml.length;
-        // 3) show next and fade in
         showOnly(currentPage, true);
         fitActivePage();
-        // 4) schedule next loop after fade-in + display time
         cycleTimer = setTimeout(loop, CONFIG.DISPLAY_MS + CONFIG.FADE_MS);
       });
     }
@@ -187,6 +193,7 @@
     if (typeof fetch === 'function'){
       return fetch(url, { cache:'no-store' }).then(function(res){ if(!res.ok) throw new Error('HTTP '+res.status); return res.json(); });
     }
+    // XHR fallback
     return new Promise(function(resolve,reject){
       try{
         var xhr=new XMLHttpRequest();
@@ -212,7 +219,9 @@
       var norm = (Array.isArray(raw)?raw:[]).map(normalizeEvent);
       var upcoming = filterUpcoming(norm).sort(sortByStart).slice(0, CONFIG.MAX_EVENTS);
       if (!upcoming.length){
-        $pages().innerHTML = '<div class="page show fade-in"><div class="event"><div class="event-title">No upcoming events found.</div></div></div>';
+        $pages().innerHTML =
+          '<div class="page show fade-in"><div class="event"><div class="event-title">No upcoming events found.</div></div></div>';
+        setStatus('No upcoming events.');
         return;
       }
       renderPaged(upcoming);
@@ -221,7 +230,8 @@
     }catch(err){
       console.error('Load error:', err);
       setStatus('Failed to load events.');
-      $pages().innerHTML = '<div class="page show fade-in"><div class="event"><div class="event-title">Failed to load events.</div></div></div>';
+      $pages().innerHTML =
+        '<div class="page show fade-in"><div class="event"><div class="event-title">Failed to load events.</div></div></div>';
     } finally {
       fitActivePage();
     }
