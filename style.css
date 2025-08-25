@@ -1,5 +1,5 @@
 :root{
-  /* Container: 960w x 1080h (portrait) */
+  /* Portrait 960 × 1080 */
   --w: 960px;
   --h: 1080px;
 
@@ -10,9 +10,12 @@
   --ink: #111;
   --bg: #fff;
 
-  /* Base sizes (bigger than before) */
+  /* Typography (bigger for 4/page) */
   --title: 34px;
   --meta: 22px;
+
+  /* Fade duration */
+  --fade-ms: 1000ms;
 }
 
 * { box-sizing: border-box; }
@@ -30,24 +33,28 @@ html, body {
   margin: 0 auto;
   padding: var(--pad);
   overflow: hidden;
-  position: relative;
+  position: relative; /* stack pages */
 }
 
-/* Page layout the script toggles with .active */
+/* --- Cross-fade pages --- */
 .page {
-  display: none;
   position: absolute;
   inset: 0;
   padding: 0;
+  opacity: 0;
+  transition: opacity var(--fade-ms) ease;
+  pointer-events: none;
 }
 .page.active {
+  opacity: 1;
+  pointer-events: auto;
+  z-index: 1;
   display: flex;
   flex-direction: column;
   justify-content: flex-start;
   align-items: stretch;
   gap: var(--gap);
 }
-
 /* Prevent side clipping on long words */
 .page.active > * { min-width: 0; }
 
@@ -80,7 +87,7 @@ html, body {
   white-space: normal;
 }
 
-/* Auto-fit steps used by script.js: it adds .tight / .tighter if needed */
+/* --- Auto-fit steps (script.js toggles these if needed) --- */
 .page.active.tight .event-title  { font-size: 30px; }
 .page.active.tight .event-detail { font-size: 20px; }
 .page.active.tight { gap: 12px; }
@@ -91,5 +98,5 @@ html, body {
 .page.active.tighter { gap: 10px; }
 .page.active.tighter .event { padding: 8px 12px 10px; }
 
-/* When script falls back to scaling, keep width fixed and scale from top-left */
+/* When scaling is needed, keep width fixed and scale from top-left */
 .page.active.scaled { transform-origin: top left; }
