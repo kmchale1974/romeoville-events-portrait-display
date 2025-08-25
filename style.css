@@ -1,125 +1,95 @@
 :root{
-  --container-w: 960px;   /* width */
-  --container-h: 1080px;  /* height */
-  --bg: #ffffff;
-  --ink: #1b1b1b;
-  --rule: #d9d9d9;
-  --title-size: 24px;
-  --meta-size: 18px;
-  --pad: 20px;
-  --line: 1px;
-  --fade-ms: 600ms;
+  /* Container: 960w x 1080h (portrait) */
+  --w: 960px;
+  --h: 1080px;
+
+  /* Spacing & colors */
+  --pad: 24px;
+  --gap: 14px;
+  --rule: #ddd;
+  --ink: #111;
+  --bg: #fff;
+
+  /* Base sizes (bigger than before) */
+  --title: 34px;
+  --meta: 22px;
 }
 
 * { box-sizing: border-box; }
 html, body {
-  height: 100%;
   margin: 0;
-  background: var(--bg);
-  font-family: Arial, Helvetica, sans-serif;
-  color: var(--ink);
-}
-
-#container{
-  width: var(--container-w);
-  height: var(--container-h);
-  margin: 0 auto;
-  overflow: hidden;       /* strictly contained */
-  background: var(--bg);
-  position: relative;
-}
-
-#pages{
-  width: 100%;
   height: 100%;
+  background: var(--bg);
+  color: var(--ink);
+  font-family: Arial, Helvetica, sans-serif;
+}
+
+#pages {
+  width: var(--w);
+  height: var(--h);
+  margin: 0 auto;
+  padding: var(--pad);
+  overflow: hidden;
   position: relative;
 }
 
-/* Pages hidden by default */
-.page{
+/* Page layout the script toggles with .active */
+.page {
   display: none;
   position: absolute;
   inset: 0;
-  padding: var(--pad);
-  transform-origin: top left;   /* scaling fits from top-left */
+  padding: 0;
 }
-
-/* Active page: top-aligned with consistent gap */
-.page.active{
+.page.active {
   display: flex;
   flex-direction: column;
   justify-content: flex-start;
   align-items: stretch;
-  gap: 10px;
-  animation: fadeIn var(--fade-ms) ease-in-out;
+  gap: var(--gap);
 }
 
-/* allow flex children to shrink properly (prevents side clipping) */
+/* Prevent side clipping on long words */
 .page.active > * { min-width: 0; }
 
-/* Each event block */
-.event{
-  width: 100%;
-  max-width: 100%;
-  padding: 10px 14px 12px;      /* L/R padding to keep text off edges */
-  border-bottom: var(--line) solid var(--rule);
-
-  overflow-wrap: anywhere;      /* strongest wrapping */
-  word-wrap: break-word;
+.event {
+  border-bottom: 1px solid var(--rule);
+  padding: 12px 16px 14px;
+  overflow-wrap: anywhere;
   word-break: break-word;
-  hyphens: auto;
   white-space: normal;
 }
+.event:last-child { border-bottom: none; }
 
-.event:last-child{ border-bottom: none; }
-
-.event-title{
+.event-title {
   font-weight: 700;
-  font-size: var(--title-size);
+  font-size: var(--title);
   line-height: 1.25;
-  margin: 0 0 6px 0;
-  padding-right: 2px;           /* tiny buffer to avoid right-edge kiss */
+  margin: 0 0 8px 0;
+  padding-right: 2px; /* tiny buffer from right edge */
   overflow-wrap: anywhere;
   word-break: break-word;
-  hyphens: auto;
 }
 
-.event-detail{
-  font-size: var(--meta-size);
+.event-detail {
+  font-size: var(--meta);
   margin: 2px 0;
+  padding-left: 16px;  /* slight indent under the title */
   color: #444;
-  padding-left: 14px;           /* slight indent under the title */
   overflow-wrap: anywhere;
   word-break: break-word;
-  hyphens: auto;
   white-space: normal;
 }
 
-/* ---------- Auto-fit classes (stepped) ---------- */
-.page.active.tight .event-title{ font-size: 22px; }
-.page.active.tight .event-detail{ font-size: 17px; }
-.page.active.tight{ gap: 8px; }
-.page.active.tight .event{ padding: 8px 12px 10px; }
+/* Auto-fit steps used by script.js: it adds .tight / .tighter if needed */
+.page.active.tight .event-title  { font-size: 30px; }
+.page.active.tight .event-detail { font-size: 20px; }
+.page.active.tight { gap: 12px; }
+.page.active.tight .event { padding: 10px 14px 12px; }
 
-.page.active.tighter .event-title{ font-size: 20px; }
-.page.active.tighter .event-detail{ font-size: 16px; }
-.page.active.tighter{ gap: 6px; }
-.page.active.tighter .event{ padding: 6px 10px 8px; }
+.page.active.tighter .event-title  { font-size: 26px; }
+.page.active.tighter .event-detail { font-size: 18px; }
+.page.active.tighter { gap: 10px; }
+.page.active.tighter .event { padding: 8px 12px 10px; }
 
-/* when scaling is needed, JS adds .scaled and only applies transform */
-.page.active.scaled {}
-
-/* ----------------------------------------------- */
-
-#status{
-  position: absolute;
-  right: 10px;
-  bottom: 8px;
-  font-size: 12px;
-  opacity: 0.5;
-}
-
-@keyframes fadeIn{
-  from{ opacity: 0 }
-  to{ opacity: 1 }
-}
+/* When script falls back to scaling, keep width fixed and scale from top-left */
+.page.active.scaled { transform-origin: top left; }
