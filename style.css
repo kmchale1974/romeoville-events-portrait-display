@@ -11,7 +11,7 @@
   --bg: #fff;
 
   /* Typography (nice and big for 4/page) */
-  --title: 42px;  /* bump if you want bigger */
+  --title: 42px;  /* adjust if you want bigger/smaller */
   --meta: 26px;
 
   /* Fade timing for content */
@@ -27,15 +27,6 @@ html, body {
   font-family: Arial, Helvetica, sans-serif;
 }
 
-/* Simple status line at the top */
-#status {
-  width: var(--w);
-  margin: 0 auto;
-  padding: 6px 12px;
-  font: 14px/1.4 Arial, Helvetica, sans-serif;
-  color: #666;
-}
-
 #pages {
   width: var(--w);
   height: var(--h);
@@ -44,7 +35,6 @@ html, body {
   overflow: hidden;
   position: relative; /* stack pages */
   background: var(--bg);
-  border: 0;
 }
 
 /* Page stack + text-only fading */
