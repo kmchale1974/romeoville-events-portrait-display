@@ -1,18 +1,28 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="utf-8" />
+  <meta charset="UTF-8" />
+  <title>Romeoville Events (Portrait)</title>
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Romeoville Events</title>
-  <link rel="stylesheet" href="style.css?v=11" />
+  <link rel="stylesheet" href="./style.css?v=2" />
 </head>
 <body>
-  <div id="container" role="main" aria-label="Upcoming Events">
-    <div id="pages"></div>
-    <div id="status" aria-live="polite"></div>
+  <!-- Status line stays visible even if JS fails -->
+  <div id="status">Loading…</div>
+
+  <!-- Page stack (JS will fill this) -->
+  <div id="pages">
+    <div class="page show fade-in">
+      <div class="event">
+        <div class="event-title">Loading events…</div>
+      </div>
+    </div>
   </div>
 
-  <script src="script.js?v=11"></script>
-  <noscript>Please enable JavaScript to view events.</noscript>
+  <noscript>
+    <div style="padding:16px;font:16px/1.4 Arial">This page needs JavaScript enabled.</div>
+  </noscript>
+
+  <script src="./script.js?v=2"></script>
 </body>
 </html>
