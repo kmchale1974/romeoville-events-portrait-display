@@ -10,12 +10,12 @@
   --ink: #111;
   --bg: #fff;
 
-  /* Typography (bigger for 4/page) */
-  --title: 34px;
-  --meta: 22px;
+  /* Bigger typography for 4/page */
+  --title: 38px;  /* was 34px */
+  --meta: 24px;   /* was 22px */
 
-  /* Fade duration */
-  --fade-ms: 1000ms;
+  /* Fade timing (black veil) */
+  --fade-ms: 900ms;
 }
 
 * { box-sizing: border-box; }
@@ -33,31 +33,26 @@ html, body {
   margin: 0 auto;
   padding: var(--pad);
   overflow: hidden;
-  position: relative; /* stack pages */
+  position: relative; /* stack pages + veil */
 }
 
-/* --- Cross-fade pages --- */
+/* We no longer cross-fade pages; we switch instantly and use a black veil for fade */
 .page {
   position: absolute;
   inset: 0;
+  display: none;
   padding: 0;
-  opacity: 0;
-  transition: opacity var(--fade-ms) ease;
-  pointer-events: none;
 }
 .page.active {
-  opacity: 1;
-  pointer-events: auto;
-  z-index: 1;
   display: flex;
   flex-direction: column;
   justify-content: flex-start;
   align-items: stretch;
   gap: var(--gap);
 }
-/* Prevent side clipping on long words */
-.page.active > * { min-width: 0; }
+.page.active > * { min-width: 0; } /* prevent side clipping */
 
+/* Event blocks */
 .event {
   border-bottom: 1px solid var(--rule);
   padding: 12px 16px 14px;
@@ -87,16 +82,28 @@ html, body {
   white-space: normal;
 }
 
-/* --- Auto-fit steps (script.js toggles these if needed) --- */
-.page.active.tight .event-title  { font-size: 30px; }
-.page.active.tight .event-detail { font-size: 20px; }
+/* Auto-fit steps — script adds these if needed */
+.page.active.tight .event-title  { font-size: 34px; }
+.page.active.tight .event-detail { font-size: 22px; }
 .page.active.tight { gap: 12px; }
 .page.active.tight .event { padding: 10px 14px 12px; }
 
-.page.active.tighter .event-title  { font-size: 26px; }
-.page.active.tighter .event-detail { font-size: 18px; }
+.page.active.tighter .event-title  { font-size: 30px; }
+.page.active.tighter .event-detail { font-size: 20px; }
 .page.active.tighter { gap: 10px; }
 .page.active.tighter .event { padding: 8px 12px 10px; }
 
 /* When scaling is needed, keep width fixed and scale from top-left */
 .page.active.scaled { transform-origin: top left; }
+
+/* --- Black veil for cut-to-black transition --- */
+#veil {
+  position: absolute;
+  inset: 0;
+  background: #000;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity var(--fade-ms) ease;
+  z-index: 5; /* above pages */
+}
+#veil.show { opacity: 1; }
