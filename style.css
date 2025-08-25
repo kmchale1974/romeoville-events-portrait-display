@@ -6,7 +6,6 @@
   /* Spacing & colors */
   --pad: 24px;
   --gap: 14px;
-  --rule: #ddd;
   --ink: #111;
   --bg: #fff;
 
@@ -61,15 +60,13 @@ html, body {
 
 .page.show > * { min-width: 0; } /* prevent side clipping */
 
-/* Event blocks */
+/* Event blocks — no divider line */
 .event {
-  border-bottom: 1px solid var(--rule);
   padding: 12px 16px 14px;
   overflow-wrap: anywhere;
   word-break: break-word;
   white-space: normal;
 }
-.event:last-child { border-bottom: none; }
 
 .event-title {
   font-weight: 700;
