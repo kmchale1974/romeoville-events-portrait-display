@@ -10,11 +10,11 @@
   --ink: #111;
   --bg: #fff;
 
-  /* Bigger typography for 4/page */
-  --title: 38px;
-  --meta: 24px;
+  /* Typography (nice and big for 4/page) */
+  --title: 42px;  /* bump if you want bigger */
+  --meta: 26px;
 
-  /* Fade timing (matches JS FADE_MS) */
+  /* Fade timing for content */
   --fade-ms: 900ms;
 }
 
@@ -22,9 +22,18 @@
 html, body {
   margin: 0;
   height: 100%;
-  background: var(--bg);    /* stays visible during fades */
+  background: var(--bg);
   color: var(--ink);
   font-family: Arial, Helvetica, sans-serif;
+}
+
+/* Simple status line at the top */
+#status {
+  width: var(--w);
+  margin: 0 auto;
+  padding: 6px 12px;
+  font: 14px/1.4 Arial, Helvetica, sans-serif;
+  color: #666;
 }
 
 #pages {
@@ -33,45 +42,36 @@ html, body {
   margin: 0 auto;
   padding: var(--pad);
   overflow: hidden;
-  position: relative;       /* stack pages */
+  position: relative; /* stack pages */
+  background: var(--bg);
+  border: 0;
 }
 
-/* We do NOT cross-fade. Each page fades itself in/out over the background. */
+/* Page stack + text-only fading */
 .page {
   position: absolute;
   inset: 0;
-  display: none;            /* hidden until active */
   padding: 0;
+  display: none;
+  opacity: 0;               /* hidden by default */
+}
 
-  /* layout */
+/* layout state (no opacity change yet) */
+.page.show {
+  display: flex;
   flex-direction: column;
   justify-content: flex-start;
   align-items: stretch;
   gap: var(--gap);
-
-  /* fade behavior */
-  opacity: 0;
-  transition: opacity var(--fade-ms) ease;
-  pointer-events: none;     /* ignore when hidden */
 }
 
-.page.visible {
-  display: flex;            /* becomes visible */
-  pointer-events: auto;
-  /* opacity stays 0 until JS toggles .fade-in */
-}
+/* fade states (content fades, background stays) */
+.page.fade-in  { opacity: 1; transition: opacity var(--fade-ms) ease; }
+.page.fade-out { opacity: 0; transition: opacity var(--fade-ms) ease; }
 
-.page.fade-in {
-  opacity: 1;               /* fade content up */
-}
+.page.show > * { min-width: 0; } /* prevent side clipping */
 
-.page.fade-out {
-  opacity: 0;               /* fade content down */
-}
-
-/* Prevent side clipping on long words */
-.page > * { min-width: 0; }
-
+/* Event blocks */
 .event {
   border-bottom: 1px solid var(--rule);
   padding: 12px 16px 14px;
@@ -101,16 +101,16 @@ html, body {
   white-space: normal;
 }
 
-/* Auto-fit steps — script adds these if needed */
-.page.tight .event-title  { font-size: 34px; }
-.page.tight .event-detail { font-size: 22px; }
-.page.tight { gap: 12px; }
-.page.tight .event { padding: 10px 14px 12px; }
+/* Auto-fit steps — script toggles these if needed */
+.page.show.tight .event-title  { font-size: 36px; }
+.page.show.tight .event-detail { font-size: 22px; }
+.page.show.tight { gap: 12px; }
+.page.show.tight .event { padding: 10px 14px 12px; }
 
-.page.tighter .event-title  { font-size: 30px; }
-.page.tighter .event-detail { font-size: 20px; }
-.page.tighter { gap: 10px; }
-.page.tighter .event { padding: 8px 12px 10px; }
+.page.show.tighter .event-title  { font-size: 32px; }
+.page.show.tighter .event-detail { font-size: 20px; }
+.page.show.tighter { gap: 10px; }
+.page.show.tighter .event { padding: 8px 12px 10px; }
 
 /* When scaling is needed, keep width fixed and scale from top-left */
-.page.scaled { transform-origin: top left; }
+.page.show.scaled { transform-origin: top left; }
