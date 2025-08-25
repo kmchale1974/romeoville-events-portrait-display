@@ -15,16 +15,7 @@
   var currentPage = 0;
   var cycleTimer = null;
 
-  // Show JS errors on screen so it never looks "blank"
-  window.onerror = function (msg) {
-    try {
-      var s = document.getElementById('status');
-      if (s) s.textContent = 'Error: ' + msg;
-    } catch (_e) {}
-  };
-
   function $pages(){ return document.getElementById('pages'); }
-  function $status(){ return document.getElementById('status'); }
 
   function withCacheBust(url){ var sep = url.indexOf('?') === -1 ? '?' : '&'; return url + sep + '_=' + Date.now(); }
   function parseDateSafe(val){ if (!val) return null; var d = new Date(val); return isNaN(d.getTime()) ? null : d; }
@@ -95,8 +86,6 @@
 
   function sortByStart(a,b){ var at=a.start?a.start.getTime():9007199254740991; var bt=b.start?b.start.getTime():9007199254740991; return at-bt; }
   function chunk(arr,n){ var out=[],i=0; for(;i<arr.length;i+=n) out.push(arr.slice(i,i+n)); return out; }
-
-  function setStatus(msg){ var el=$status(); if(el) el.textContent=msg||''; }
 
   function escapeHtml(s){
     s = String(s);
@@ -213,7 +202,6 @@
   }
 
   async function loadAndRender(){
-    setStatus('Loading…');
     try{
       var raw = await getJson(CONFIG.EVENTS_URL);
       var norm = (Array.isArray(raw)?raw:[]).map(normalizeEvent);
@@ -221,15 +209,12 @@
       if (!upcoming.length){
         $pages().innerHTML =
           '<div class="page show fade-in"><div class="event"><div class="event-title">No upcoming events found.</div></div></div>';
-        setStatus('No upcoming events.');
         return;
       }
       renderPaged(upcoming);
       startCycle();
-      setStatus(upcoming.length + ' upcoming event' + (upcoming.length===1?'':'s') + ' • updated ' + new Date().toLocaleTimeString());
     }catch(err){
       console.error('Load error:', err);
-      setStatus('Failed to load events.');
       $pages().innerHTML =
         '<div class="page show fade-in"><div class="event"><div class="event-title">Failed to load events.</div></div></div>';
     } finally {
