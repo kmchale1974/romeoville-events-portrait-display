@@ -2,15 +2,15 @@
   // ======= CONFIG =======
   var CONFIG = {
     EVENTS_URL: 'events.json',
-    EVENTS_PER_PAGE: 4,
-    MAX_EVENTS: 24,
-    PAGE_DURATION_MS: 12000,        // 12 seconds per page
-    REFRESH_EVERY_MINUTES: 60,      // reload data hourly
-    HARD_RELOAD_AT_MIDNIGHT: true,  // full reload after midnight
+    EVENTS_PER_PAGE: 4,            // 4 per page
+    MAX_EVENTS: 24,                // total cap
+    PAGE_DURATION_MS: 12000,       // 12 seconds per page
+    REFRESH_EVERY_MINUTES: 60,     // reload data hourly
+    HARD_RELOAD_AT_MIDNIGHT: true, // full reload after midnight
     TIMEZONE: (Intl && Intl.DateTimeFormat ? Intl.DateTimeFormat().resolvedOptions().timeZone : null) || 'America/Chicago'
   };
 
-  var pages = [];
+  var pagesHtml = [];   // array of page HTML strings
   var currentPage = 0;
   var rotateTimer = null;
 
@@ -44,9 +44,7 @@
     }
 
     // Default end to +2 hours if missing
-    if (!end && start) {
-      end = new Date(start.getTime() + 2 * 60 * 60 * 1000);
-    }
+    if (!end && start) end = new Date(start.getTime() + 2 * 60 * 60 * 1000);
 
     return {
       title: e.title || 'Untitled Event',
@@ -86,7 +84,6 @@
         }
         return startStr;
       } catch (_e) {
-        // Very old engines fallback
         var s = e.start, h = s.getHours(), m = s.getMinutes();
         var am = h < 12 ? 'AM' : 'PM'; h = h % 12; if (h === 0) h = 12;
         if (m < 10) m = '0' + m;
@@ -105,7 +102,7 @@
 
   function filterUpcoming(list){
     var now = new Date();
-    var sod = startOfDay(now).getTime();
+    var sod = new Date(now.getFullYear(), now.getMonth(), now.getDate()).getTime();
     return list.filter(function(e){
       if (e.end) return e.end.getTime() >= sod;
       if (e.start) return e.start.getTime() >= sod;
@@ -113,10 +110,8 @@
     });
   }
 
-  function startOfDay(d){ return new Date(d.getFullYear(), d.getMonth(), d.getDate()); }
-
   function sortByStart(a, b){
-    var at = a.start ? a.start.getTime() : 9007199254740991; // MAX_SAFE_INTEGER-ish
+    var at = a.start ? a.start.getTime() : 9007199254740991;
     var bt = b.start ? b.start.getTime() : 9007199254740991;
     return at - bt;
   }
@@ -132,9 +127,20 @@
     if (el) el.textContent = msg || '';
   }
 
+  function escapeHtml(s){
+    s = String(s);
+    s = s.replace(/&/g, '&amp;');
+    s = s.replace(/</g, '&lt;');
+    s = s.replace(/>/g, '&gt;');
+    s = s.replace(/"/g, '&quot;');
+    s = s.replace(/'/g, '&#39;');
+    return s;
+  }
+
+  // Render ALL pages into the DOM (for cross-fade)
   function renderPaged(events){
     var groups = chunk(events, CONFIG.EVENTS_PER_PAGE);
-    pages = groups.map(function(group){
+    pagesHtml = groups.map(function(group){
       var itemsHtml = group.map(function(e){
         var dateStr = formatEventDate(e);
         var timeStr = formatEventTime(e);
@@ -150,34 +156,32 @@
       return '<div class="page">' + itemsHtml + '</div>';
     });
 
-    $pages().innerHTML = pages.join('');
+    $pages().innerHTML = pagesHtml.join('');
     currentPage = 0;
     updateActivePage();
   }
 
+  // Toggle .active to cross-fade
   function updateActivePage(){
-    var pageEls = Array.prototype.slice.call(document.querySelectorAll('.page'));
-    pageEls.forEach(function(el, i){
-      if (i === currentPage) el.classList.add('active');
-      else el.classList.remove('active');
-    });
+    var all = Array.prototype.slice.call(document.querySelectorAll('.page'));
+    for (var i = 0; i < all.length; i++) {
+      if (i === currentPage) all[i].classList.add('active');
+      else all[i].classList.remove('active');
+    }
     fitActivePage();
   }
 
   function startRotation(){
     stopRotation();
-    if (pages.length <= 1) return;
+    if (pagesHtml.length <= 1) return;
     rotateTimer = setInterval(function(){
-      currentPage = (currentPage + 1) % pages.length;
+      currentPage = (currentPage + 1) % pagesHtml.length;
       updateActivePage();
     }, CONFIG.PAGE_DURATION_MS);
   }
 
   function stopRotation(){
-    if (rotateTimer) {
-      clearInterval(rotateTimer);
-      rotateTimer = null;
-    }
+    if (rotateTimer) { clearInterval(rotateTimer); rotateTimer = null; }
   }
 
   // Auto-fit: step down sizes; if still too tall, scale the page without widening
@@ -265,9 +269,7 @@
 
   function scheduleHourlyRefresh(){
     var ms = CONFIG.REFRESH_EVERY_MINUTES * 60 * 1000;
-    setInterval(function(){
-      loadAndRender().then(fitActivePage);
-    }, ms);
+    setInterval(function(){ loadAndRender(); }, ms);
   }
 
   function scheduleMidnightReload(){
@@ -277,16 +279,6 @@
     next.setHours(24, 0, 2, 0); // ~2s after midnight
     var delay = next.getTime() - now.getTime();
     setTimeout(function(){ location.reload(); }, delay);
-  }
-
-  function escapeHtml(s){
-    s = String(s);
-    s = s.replace(/&/g, '&amp;');
-    s = s.replace(/</g, '&lt;');
-    s = s.replace(/>/g, '&gt;');
-    s = s.replace(/"/g, '&quot;');
-    s = s.replace(/'/g, '&#39;');
-    return s;
   }
 
   window.addEventListener('load', function(){
