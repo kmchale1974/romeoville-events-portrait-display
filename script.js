@@ -20,9 +20,48 @@
   function withCacheBust(url){ var sep = url.indexOf('?') === -1 ? '?' : '&'; return url + sep + '_=' + Date.now(); }
   function parseDateSafe(val){ if (!val) return null; var d = new Date(val); return isNaN(d.getTime()) ? null : d; }
 
+  // Build a local Date (midnight local) from an ISO date string "YYYY-MM-DD"
+  function localDateFromYMD(ymd){
+    var y = parseInt(ymd.slice(0,4),10);
+    var m = parseInt(ymd.slice(5,7),10) - 1;
+    var d = parseInt(ymd.slice(8,10),10);
+    return new Date(y, m, d, 0, 0, 0, 0);
+  }
+
+  // Format helpers
+  function fmtDateLocal(d){
+    try {
+      return new Intl.DateTimeFormat('en-US', {
+        weekday:'short', month:'short', day:'numeric', year:'numeric',
+        timeZone: CONFIG.TIMEZONE
+      }).format(d);
+    } catch (_e) {
+      return (d.getMonth()+1) + "/" + d.getDate() + "/" + d.getFullYear();
+    }
+  }
+
+  function fmtTimeLocal(d){
+    try {
+      return new Intl.DateTimeFormat('en-US', {
+        hour:'numeric', minute:'2-digit', timeZone: CONFIG.TIMEZONE
+      }).format(d);
+    } catch (_e) {
+      var h=d.getHours(), m=d.getMinutes(), am=h<12?'AM':'PM'; h=h%12; if(h===0)h=12; if(m<10)m='0'+m;
+      return h+':'+m+' '+am;
+    }
+  }
+
+  // Detect if a string is an "all-day" UTC-midnight stamp like "2025-11-19T00:00:00Z"
+  function isAllDayUTCStamp(s){
+    return typeof s === 'string' && /T00:00:00(\.000)?Z$/i.test(s);
+  }
+
   function normalizeEvent(e){
-    var start = parseDateSafe(e.start);
-    var end = parseDateSafe(e.end);
+    var startRaw = e.start;
+    var endRaw   = e.end;
+
+    var start = parseDateSafe(startRaw);
+    var end   = parseDateSafe(endRaw);
 
     // Legacy support (date/time fields)
     if (!start && e.date) {
@@ -35,7 +74,18 @@
       start = parseDateSafe(base);
     }
 
+    // Default end to +2 hours if missing (for timed events)
     if (!end && start) end = new Date(start.getTime() + 2 * 60 * 60 * 1000);
+
+    // --- All-day handling (prevents off-by-one in local time) ---
+    // If the feed gave UTC-midnight timestamps, treat them as all-day on the date part.
+    var isAllDay = false;
+    var allDayDateYMD = null;
+    if (isAllDayUTCStamp(startRaw)) {
+      isAllDay = true;
+      allDayDateYMD = String(startRaw).slice(0,10); // "YYYY-MM-DD"
+    }
+    // Some feeds also set end to next day's 00:00Z; we don't need it for display.
 
     return {
       title: e.title || 'Untitled Event',
@@ -43,37 +93,38 @@
       displayDate: e.date || null,
       displayTime: e.time || null,
       start: start,
-      end: end
+      end: end,
+      isAllDay: isAllDay,
+      allDayYMD: allDayDateYMD
     };
   }
 
-  function formatEventDate(e){
-    if (e.displayDate) return e.displayDate;
-    if (e.start) {
-      try {
-        return new Intl.DateTimeFormat('en-US', {
-          weekday:'short', month:'short', day:'numeric', year:'numeric',
-          timeZone: CONFIG.TIMEZONE
-        }).format(e.start);
-      } catch (_e) {}
+  function formatEventDate(ev){
+    // If the feed gave a literal date string, keep it verbatim
+    if (ev.displayDate) return ev.displayDate;
+
+    // All-day UTC stamp → use the date part as a local date (no timezone shift)
+    if (ev.isAllDay && ev.allDayYMD){
+      var ld = localDateFromYMD(ev.allDayYMD);
+      return fmtDateLocal(ld);
     }
+
+    // Normal timed events
+    if (ev.start) return fmtDateLocal(ev.start);
+
     return 'TBA';
   }
 
-  function formatEventTime(e){
-    if (e.displayTime) return e.displayTime;
-    if (e.start) {
-      try {
-        var fmt = new Intl.DateTimeFormat('en-US', { hour:'numeric', minute:'2-digit', timeZone: CONFIG.TIMEZONE });
-        var s = fmt.format(e.start);
-        if (e.end) return s + ' \u2013 ' + fmt.format(e.end);
-        return s;
-      } catch (_e) {
-        var d = e.start, h=d.getHours(), m=d.getMinutes(), am=h<12?'AM':'PM'; h=h%12; if(h===0)h=12; if(m<10)m='0'+m;
-        var out = h+':'+m+' '+am;
-        if (e.end){ var de=e.end, hh=de.getHours(), mm=de.getMinutes(), aam=hh<12?'AM':'PM'; hh=hh%12; if(hh===0)hh=12; if(mm<10)mm='0'+mm; out += ' \u2013 '+hh+':'+mm+' '+aam; }
-        return out;
-      }
+  function formatEventTime(ev){
+    if (ev.displayTime) return ev.displayTime;
+
+    // All-day events show as "All day"
+    if (ev.isAllDay) return 'All day';
+
+    if (ev.start) {
+      var s = fmtTimeLocal(ev.start);
+      if (ev.end) return s + ' \u2013 ' + fmtTimeLocal(ev.end);
+      return s;
     }
     return 'TBA';
   }
@@ -81,10 +132,27 @@
   function filterUpcoming(list){
     var now = new Date();
     var sod = new Date(now.getFullYear(), now.getMonth(), now.getDate()).getTime();
-    return list.filter(function(e){ if (e.end) return e.end.getTime() >= sod; if (e.start) return e.start.getTime() >= sod; return true; });
+    return list.filter(function(e){
+      // For all-day items, consider the local date derived from YMD
+      if (e.isAllDay && e.allDayYMD){
+        var ld = localDateFromYMD(e.allDayYMD).getTime();
+        return ld >= sod;
+      }
+      if (e.end) return e.end.getTime() >= sod;
+      if (e.start) return e.start.getTime() >= sod;
+      return true;
+    });
   }
 
-  function sortByStart(a,b){ var at=a.start?a.start.getTime():9007199254740991; var bt=b.start?b.start.getTime():9007199254740991; return at-bt; }
+  function sortByStart(a,b){
+    // For all-day, sort by their local date
+    var at = a.isAllDay && a.allDayYMD ? localDateFromYMD(a.allDayYMD).getTime()
+             : (a.start ? a.start.getTime() : 9007199254740991);
+    var bt = b.isAllDay && b.allDayYMD ? localDateFromYMD(b.allDayYMD).getTime()
+             : (b.start ? b.start.getTime() : 9007199254740991);
+    return at - bt;
+  }
+
   function chunk(arr,n){ var out=[],i=0; for(;i<arr.length;i+=n) out.push(arr.slice(i,i+n)); return out; }
 
   function escapeHtml(s){
@@ -133,7 +201,7 @@
         if (doFadeIn) {
           // Force a reflow so the next class change animates cleanly
           void n.offsetWidth;
-          n.classList.add('fade-in');  // fade from 0 -> 1
+          n.classList.add('fade-in');  // fade 0 -> 1
         } else {
           n.classList.add('fade-in');  // immediately visible
         }
@@ -236,7 +304,7 @@
     setTimeout(function(){ location.reload(); }, delay);
   }
 
-  // Auto-fit logic (unchanged)
+  // Auto-fit logic
   function fitActivePage(){
     var active = document.querySelector('.page.show');
     if (!active) return;
