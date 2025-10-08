@@ -1,13 +1,13 @@
 (function () {
   // ======= CONFIG =======
   var CONFIG = {
-    EVENTS_URL: 'events.json',      // same-folder JSON
-    EVENTS_PER_PAGE: 4,             // show 4 per page
-    MAX_EVENTS: 24,                 // total cap
-    DISPLAY_MS: 12000,              // fully visible time per page
-    FADE_MS: 900,                   // match --fade-ms in CSS
-    REFRESH_EVERY_MINUTES: 60,      // reload data hourly
-    HARD_RELOAD_AT_MIDNIGHT: true,  // full reload after midnight
+    EVENTS_URL: 'events.json',
+    EVENTS_PER_PAGE: 4,
+    MAX_EVENTS: 24,
+    DISPLAY_MS: 12000,
+    FADE_MS: 900,
+    REFRESH_EVERY_MINUTES: 60,
+    HARD_RELOAD_AT_MIDNIGHT: true,
     TIMEZONE: (Intl && Intl.DateTimeFormat ? Intl.DateTimeFormat().resolvedOptions().timeZone : null) || 'America/Chicago'
   };
 
@@ -20,7 +20,7 @@
   function withCacheBust(url){ var sep = url.indexOf('?') === -1 ? '?' : '&'; return url + sep + '_=' + Date.now(); }
   function parseDateSafe(val){ if (!val) return null; var d = new Date(val); return isNaN(d.getTime()) ? null : d; }
 
-  // Build a local Date (midnight local) from "YYYY-MM-DD"
+  // Local midnight from YYYY-MM-DD
   function localDateFromYMD(ymd){
     var y = parseInt(ymd.slice(0,4),10);
     var m = parseInt(ymd.slice(5,7),10) - 1;
@@ -50,24 +50,38 @@
     }
   }
 
-  // ---- All-day detection helpers (tightened) ----
+  // --- Helpers for all-day + synthetic 11:59 PM ends ---
   function isUTCISO(s){ return typeof s === 'string' && /T\d{2}:\d{2}:\d{2}(\.\d+)?Z$/i.test(s); }
   function isMidnightUTC(s){ return typeof s === 'string' && /T00:00:00(\.\d+)?Z$/i.test(s); }
 
-  // Only treat as all-day if BOTH start & end are UTC midnight and duration ~24h (or more)
+  // Treat as all-day only if BOTH start & end are UTC midnight and duration ~24h+
   function detectAllDay(startRaw, endRaw){
     if (!isUTCISO(startRaw) || !isMidnightUTC(startRaw)) return null;
-    if (!isUTCISO(endRaw) || !isMidnightUTC(endRaw)) return null;
-
-    var s = new Date(startRaw);
-    var e = new Date(endRaw);
+    if (!isUTCISO(endRaw)   || !isMidnightUTC(endRaw))   return null;
+    var s = new Date(startRaw), e = new Date(endRaw);
     if (isNaN(s) || isNaN(e)) return null;
-
-    var ms = e - s;
-    if (ms >= 24*60*60*1000 - 1000) {
-      return String(startRaw).slice(0,10); // "YYYY-MM-DD"
-    }
+    if ((e - s) >= (24*60*60*1000 - 1000)) return String(startRaw).slice(0,10);
     return null;
+  }
+
+  // Returns true if the local-time formatted end is exactly 11:59 PM (common placeholder)
+  function isSyntheticEndLocal(endDate){
+    try {
+      var parts = new Intl.DateTimeFormat('en-US', {
+        hour:'numeric', minute:'2-digit', hour12:true, timeZone: CONFIG.TIMEZONE
+      }).formatToParts(endDate);
+      var hour = null, minute = null, period = null;
+      for (var i=0;i<parts.length;i++){
+        var p = parts[i];
+        if (p.type === 'hour') hour = parseInt(p.value, 10);
+        if (p.type === 'minute') minute = p.value;
+        if (p.type === 'dayPeriod') period = p.value; // "AM"/"PM"
+      }
+      return hour === 11 && minute === '59' && String(period).toUpperCase() === 'PM';
+    } catch (_e) {
+      // fallback: string compare
+      return fmtTimeLocal(endDate) === '11:59 PM';
+    }
   }
 
   function normalizeEvent(e){
@@ -88,10 +102,7 @@
       start = parseDateSafe(base);
     }
 
-    // IMPORTANT CHANGE:
-    // Do NOT invent an end time if missing. If the feed has no end,
-    // we leave 'end' as null so we display only the start time.
-    // if (!end && start) end = new Date(start.getTime() + 2 * 60 * 60 * 1000);
+    // Do NOT invent an end time if missing. Leave 'end' as-is.
 
     var allDayYMD = detectAllDay(startRaw, endRaw);
     var isAllDay = !!allDayYMD;
@@ -124,9 +135,11 @@
 
     if (ev.start) {
       var s = fmtTimeLocal(ev.start);
-      // If no end is provided, show ONLY the start time
-      if (ev.end) return s + ' \u2013 ' + fmtTimeLocal(ev.end);
-      return s;
+      // If end exists but is a synthetic 11:59 PM placeholder, suppress it
+      if (ev.end && !isSyntheticEndLocal(ev.end)) {
+        return s + ' \u2013 ' + fmtTimeLocal(ev.end);
+      }
+      return s; // only start time
     }
     return 'TBA';
   }
@@ -162,7 +175,6 @@
     return s;
   }
 
-  // ---- Render ALL pages into the DOM (hidden by default) ----
   function renderPaged(events){
     var groups = chunk(events, CONFIG.EVENTS_PER_PAGE);
     pagesHtml = groups.map(function(group){
@@ -187,25 +199,19 @@
     fitActivePage();
   }
 
-  // Show index; if doFadeIn, run fade-in; otherwise just show
   function showOnly(idx, doFadeIn){
     var nodes = Array.prototype.slice.call(document.querySelectorAll('.page'));
     for (var i=0;i<nodes.length;i++){
       var n = nodes[i];
       n.classList.remove('fade-in','fade-out','show');
       if (i === idx) {
-        n.classList.add('show'); // layout visible at opacity:0
-        if (doFadeIn) {
-          void n.offsetWidth;    // force reflow for clean animation
-          n.classList.add('fade-in');
-        } else {
-          n.classList.add('fade-in');
-        }
+        n.classList.add('show');
+        if (doFadeIn) { void n.offsetWidth; n.classList.add('fade-in'); }
+        else { n.classList.add('fade-in'); }
       }
     }
   }
 
-  // Fade the current page out fully, then callback
   function fadeOutCurrent(callback){
     var nodes = Array.prototype.slice.call(document.querySelectorAll('.page'));
     var cur = nodes[currentPage];
@@ -218,7 +224,6 @@
     }, CONFIG.FADE_MS);
   }
 
-  // ---- Full timeline: fade in → display → fade out → switch → repeat ----
   function startCycle(){
     stopCycle();
     showOnly(currentPage, true);
@@ -235,13 +240,11 @@
 
   function stopCycle(){ if (cycleTimer){ clearTimeout(cycleTimer); cycleTimer=null; } }
 
-  // --------- Networking (fetch with XHR fallback) ----------
   function getJson(url){
     url = withCacheBust(url);
     if (typeof fetch === 'function'){
       return fetch(url, { cache:'no-store' }).then(function(res){ if(!res.ok) throw new Error('HTTP '+res.status); return res.json(); });
     }
-    // XHR fallback
     return new Promise(function(resolve,reject){
       try{
         var xhr=new XMLHttpRequest();
@@ -295,7 +298,6 @@
     setTimeout(function(){ location.reload(); }, delay);
   }
 
-  // Auto-fit logic
   function fitActivePage(){
     var active = document.querySelector('.page.show');
     if (!active) return;
@@ -314,7 +316,7 @@
 
     var h=active.scrollHeight, H=active.clientHeight;
     if (h>0 && H>0){
-      var scale=Math.min(1, Math.max(0.7, H/h)); /* don’t shrink below 70% */
+      var scale=Math.min(1, Math.max(0.7, H/h));
       active.classList.add('scaled');
       active.style.transform='scale('+scale+')';
     }
