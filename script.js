@@ -20,7 +20,7 @@
   function withCacheBust(url){ var sep = url.indexOf('?') === -1 ? '?' : '&'; return url + sep + '_=' + Date.now(); }
   function parseDateSafe(val){ if (!val) return null; var d = new Date(val); return isNaN(d.getTime()) ? null : d; }
 
-  // Build a local Date (midnight local) from an ISO date string "YYYY-MM-DD"
+  // Build a local Date (midnight local) from "YYYY-MM-DD"
   function localDateFromYMD(ymd){
     var y = parseInt(ymd.slice(0,4),10);
     var m = parseInt(ymd.slice(5,7),10) - 1;
@@ -28,7 +28,6 @@
     return new Date(y, m, d, 0, 0, 0, 0);
   }
 
-  // Format helpers
   function fmtDateLocal(d){
     try {
       return new Intl.DateTimeFormat('en-US', {
@@ -51,9 +50,25 @@
     }
   }
 
-  // Detect if a string is an "all-day" UTC-midnight stamp like "2025-11-19T00:00:00Z"
-  function isAllDayUTCStamp(s){
-    return typeof s === 'string' && /T00:00:00(\.000)?Z$/i.test(s);
+  // ---- All-day detection helpers (tightened) ----
+  function isUTCISO(s){ return typeof s === 'string' && /T\d{2}:\d{2}:\d{2}(\.\d+)?Z$/i.test(s); }
+  function isMidnightUTC(s){ return typeof s === 'string' && /T00:00:00(\.\d+)?Z$/i.test(s); }
+
+  // Only treat as all-day if BOTH start & end are UTC midnight and duration ~24h (or more, multi-day all-day)
+  function detectAllDay(startRaw, endRaw){
+    if (!isUTCISO(startRaw) || !isMidnightUTC(startRaw)) return null; // start isn't midnight UTC → not all-day
+    if (!isUTCISO(endRaw) || !isMidnightUTC(endRaw)) return null;     // end missing or not midnight UTC → not all-day
+
+    var s = new Date(startRaw);
+    var e = new Date(endRaw);
+    if (isNaN(s) || isNaN(e)) return null;
+
+    var ms = e - s;
+    if (ms >= 24*60*60*1000 - 1000) {
+      // Typical ICS all-day: end = next day's 00:00Z (or later for multi-day)
+      return String(startRaw).slice(0,10); // "YYYY-MM-DD"
+    }
+    return null;
   }
 
   function normalizeEvent(e){
@@ -74,18 +89,12 @@
       start = parseDateSafe(base);
     }
 
-    // Default end to +2 hours if missing (for timed events)
+    // Default end to +2 hours if missing (timed events)
     if (!end && start) end = new Date(start.getTime() + 2 * 60 * 60 * 1000);
 
-    // --- All-day handling (prevents off-by-one in local time) ---
-    // If the feed gave UTC-midnight timestamps, treat them as all-day on the date part.
-    var isAllDay = false;
-    var allDayDateYMD = null;
-    if (isAllDayUTCStamp(startRaw)) {
-      isAllDay = true;
-      allDayDateYMD = String(startRaw).slice(0,10); // "YYYY-MM-DD"
-    }
-    // Some feeds also set end to next day's 00:00Z; we don't need it for display.
+    // Tight all-day detection — avoids misclassifying 6–8pm (00:00–02:00Z) as all-day
+    var allDayYMD = detectAllDay(startRaw, endRaw);
+    var isAllDay = !!allDayYMD;
 
     return {
       title: e.title || 'Untitled Event',
@@ -95,32 +104,23 @@
       start: start,
       end: end,
       isAllDay: isAllDay,
-      allDayYMD: allDayDateYMD
+      allDayYMD: allDayYMD
     };
   }
 
   function formatEventDate(ev){
-    // If the feed gave a literal date string, keep it verbatim
     if (ev.displayDate) return ev.displayDate;
-
-    // All-day UTC stamp → use the date part as a local date (no timezone shift)
     if (ev.isAllDay && ev.allDayYMD){
       var ld = localDateFromYMD(ev.allDayYMD);
       return fmtDateLocal(ld);
     }
-
-    // Normal timed events
     if (ev.start) return fmtDateLocal(ev.start);
-
     return 'TBA';
   }
 
   function formatEventTime(ev){
     if (ev.displayTime) return ev.displayTime;
-
-    // All-day events show as "All day"
     if (ev.isAllDay) return 'All day';
-
     if (ev.start) {
       var s = fmtTimeLocal(ev.start);
       if (ev.end) return s + ' \u2013 ' + fmtTimeLocal(ev.end);
@@ -133,7 +133,6 @@
     var now = new Date();
     var sod = new Date(now.getFullYear(), now.getMonth(), now.getDate()).getTime();
     return list.filter(function(e){
-      // For all-day items, consider the local date derived from YMD
       if (e.isAllDay && e.allDayYMD){
         var ld = localDateFromYMD(e.allDayYMD).getTime();
         return ld >= sod;
@@ -145,7 +144,6 @@
   }
 
   function sortByStart(a,b){
-    // For all-day, sort by their local date
     var at = a.isAllDay && a.allDayYMD ? localDateFromYMD(a.allDayYMD).getTime()
              : (a.start ? a.start.getTime() : 9007199254740991);
     var bt = b.isAllDay && b.allDayYMD ? localDateFromYMD(b.allDayYMD).getTime()
@@ -181,16 +179,13 @@
       return '<div class="page">'+items+'</div>';
     });
 
-    // Inject content
     $pages().innerHTML = pagesHtml.join('');
     currentPage = 0;
-
-    // Show first page (fade in)
     showOnly(currentPage, true);
     fitActivePage();
   }
 
-  // Show index; if doFadeIn, run fade-in; otherwise just show visible
+  // Show index; if doFadeIn, run fade-in; otherwise just show
   function showOnly(idx, doFadeIn){
     var nodes = Array.prototype.slice.call(document.querySelectorAll('.page'));
     for (var i=0;i<nodes.length;i++){
@@ -199,17 +194,16 @@
       if (i === idx) {
         n.classList.add('show'); // layout visible at opacity:0
         if (doFadeIn) {
-          // Force a reflow so the next class change animates cleanly
-          void n.offsetWidth;
-          n.classList.add('fade-in');  // fade 0 -> 1
+          void n.offsetWidth;    // force reflow for clean animation
+          n.classList.add('fade-in');
         } else {
-          n.classList.add('fade-in');  // immediately visible
+          n.classList.add('fade-in');
         }
       }
     }
   }
 
-  // Fade the current page out fully, then callback to switch
+  // Fade the current page out fully, then callback
   function fadeOutCurrent(callback){
     var nodes = Array.prototype.slice.call(document.querySelectorAll('.page'));
     var cur = nodes[currentPage];
@@ -225,13 +219,8 @@
   // ---- Full timeline: fade in → display → fade out → switch → repeat ----
   function startCycle(){
     stopCycle();
-
-    // ensure first page is visible and fully faded in
     showOnly(currentPage, true);
-
-    // schedule first loop after initial display+fade-in
     cycleTimer = setTimeout(loop, CONFIG.DISPLAY_MS + CONFIG.FADE_MS);
-
     function loop(){
       fadeOutCurrent(function(){
         currentPage = (currentPage + 1) % pagesHtml.length;
@@ -250,7 +239,6 @@
     if (typeof fetch === 'function'){
       return fetch(url, { cache:'no-store' }).then(function(res){ if(!res.ok) throw new Error('HTTP '+res.status); return res.json(); });
     }
-    // XHR fallback
     return new Promise(function(resolve,reject){
       try{
         var xhr=new XMLHttpRequest();
