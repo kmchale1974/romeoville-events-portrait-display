@@ -54,10 +54,10 @@
   function isUTCISO(s){ return typeof s === 'string' && /T\d{2}:\d{2}:\d{2}(\.\d+)?Z$/i.test(s); }
   function isMidnightUTC(s){ return typeof s === 'string' && /T00:00:00(\.\d+)?Z$/i.test(s); }
 
-  // Only treat as all-day if BOTH start & end are UTC midnight and duration ~24h (or more, multi-day all-day)
+  // Only treat as all-day if BOTH start & end are UTC midnight and duration ~24h (or more)
   function detectAllDay(startRaw, endRaw){
-    if (!isUTCISO(startRaw) || !isMidnightUTC(startRaw)) return null; // start isn't midnight UTC → not all-day
-    if (!isUTCISO(endRaw) || !isMidnightUTC(endRaw)) return null;     // end missing or not midnight UTC → not all-day
+    if (!isUTCISO(startRaw) || !isMidnightUTC(startRaw)) return null;
+    if (!isUTCISO(endRaw) || !isMidnightUTC(endRaw)) return null;
 
     var s = new Date(startRaw);
     var e = new Date(endRaw);
@@ -65,7 +65,6 @@
 
     var ms = e - s;
     if (ms >= 24*60*60*1000 - 1000) {
-      // Typical ICS all-day: end = next day's 00:00Z (or later for multi-day)
       return String(startRaw).slice(0,10); // "YYYY-MM-DD"
     }
     return null;
@@ -89,10 +88,11 @@
       start = parseDateSafe(base);
     }
 
-    // Default end to +2 hours if missing (timed events)
-    if (!end && start) end = new Date(start.getTime() + 2 * 60 * 60 * 1000);
+    // IMPORTANT CHANGE:
+    // Do NOT invent an end time if missing. If the feed has no end,
+    // we leave 'end' as null so we display only the start time.
+    // if (!end && start) end = new Date(start.getTime() + 2 * 60 * 60 * 1000);
 
-    // Tight all-day detection — avoids misclassifying 6–8pm (00:00–02:00Z) as all-day
     var allDayYMD = detectAllDay(startRaw, endRaw);
     var isAllDay = !!allDayYMD;
 
@@ -121,8 +121,10 @@
   function formatEventTime(ev){
     if (ev.displayTime) return ev.displayTime;
     if (ev.isAllDay) return 'All day';
+
     if (ev.start) {
       var s = fmtTimeLocal(ev.start);
+      // If no end is provided, show ONLY the start time
       if (ev.end) return s + ' \u2013 ' + fmtTimeLocal(ev.end);
       return s;
     }
@@ -239,6 +241,7 @@
     if (typeof fetch === 'function'){
       return fetch(url, { cache:'no-store' }).then(function(res){ if(!res.ok) throw new Error('HTTP '+res.status); return res.json(); });
     }
+    // XHR fallback
     return new Promise(function(resolve,reject){
       try{
         var xhr=new XMLHttpRequest();
