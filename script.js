@@ -8,7 +8,8 @@
     FADE_MS: 900,
     REFRESH_EVERY_MINUTES: 60,
     HARD_RELOAD_AT_MIDNIGHT: true,
-    TIMEZONE: (Intl && Intl.DateTimeFormat ? Intl.DateTimeFormat().resolvedOptions().timeZone : null) || 'America/Chicago'
+    TIMEZONE: (Intl && Intl.DateTimeFormat ? Intl.DateTimeFormat().resolvedOptions().timeZone : null) || 'America/Chicago',
+    MONTHS_AHEAD: 4                // <<< show only events within the next 4 months
   };
 
   var pagesHtml = [];
@@ -50,7 +51,7 @@
     }
   }
 
-  // --- Helpers for all-day + synthetic 11:59 PM ends ---
+  // ---- All-day detection helpers (tight) ----
   function isUTCISO(s){ return typeof s === 'string' && /T\d{2}:\d{2}:\d{2}(\.\d+)?Z$/i.test(s); }
   function isMidnightUTC(s){ return typeof s === 'string' && /T00:00:00(\.\d+)?Z$/i.test(s); }
 
@@ -60,7 +61,7 @@
     if (!isUTCISO(endRaw)   || !isMidnightUTC(endRaw))   return null;
     var s = new Date(startRaw), e = new Date(endRaw);
     if (isNaN(s) || isNaN(e)) return null;
-    if ((e - s) >= (24*60*60*1000 - 1000)) return String(startRaw).slice(0,10);
+    if ((e - s) >= (24*60*60*1000 - 1000)) return String(startRaw).slice(0,10); // "YYYY-MM-DD"
     return null;
   }
 
@@ -79,7 +80,6 @@
       }
       return hour === 11 && minute === '59' && String(period).toUpperCase() === 'PM';
     } catch (_e) {
-      // fallback: string compare
       return fmtTimeLocal(endDate) === '11:59 PM';
     }
   }
@@ -102,7 +102,7 @@
       start = parseDateSafe(base);
     }
 
-    // Do NOT invent an end time if missing. Leave 'end' as-is.
+    // Do NOT invent an end time if missing.
 
     var allDayYMD = detectAllDay(startRaw, endRaw);
     var isAllDay = !!allDayYMD;
@@ -144,17 +144,37 @@
     return 'TBA';
   }
 
-  function filterUpcoming(list){
+  // ---- Filter to today .. next N months (inclusive) ----
+  function filterUpcomingWindow(list){
     var now = new Date();
-    var sod = new Date(now.getFullYear(), now.getMonth(), now.getDate()).getTime();
+    var windowStart = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 0, 0, 0, 0).getTime();
+    var windowEndDate = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 23, 59, 59, 999);
+    windowEndDate.setMonth(windowEndDate.getMonth() + CONFIG.MONTHS_AHEAD);
+    var windowEnd = windowEndDate.getTime();
+
     return list.filter(function(e){
-      if (e.isAllDay && e.allDayYMD){
-        var ld = localDateFromYMD(e.allDayYMD).getTime();
-        return ld >= sod;
+      // Compute event start/end timestamps in local terms
+      var startTs = null;
+      var endTs = null;
+
+      if (e.isAllDay && e.allDayYMD) {
+        // all-day start is local midnight of YMD
+        startTs = localDateFromYMD(e.allDayYMD).getTime();
+        // if ICS provided an end, use it; else treat as single-day all-day
+        endTs = e.end ? e.end.getTime() : (startTs + 24*60*60*1000 - 1);
+      } else {
+        if (e.start) startTs = e.start.getTime();
+        if (e.end)   endTs   = e.end.getTime();
+        if (startTs != null && endTs == null) endTs = startTs; // point event
       }
-      if (e.end) return e.end.getTime() >= sod;
-      if (e.start) return e.start.getTime() >= sod;
-      return true;
+
+      if (startTs == null && endTs == null) return false; // exclude undated
+
+      // Overlap test: event [startTs, endTs] intersects window [windowStart, windowEnd]
+      if (startTs == null) startTs = endTs;
+      if (endTs == null) endTs = startTs;
+
+      return (startTs <= windowEnd) && (endTs >= windowStart);
     });
   }
 
@@ -267,13 +287,17 @@
     try{
       var raw = await getJson(CONFIG.EVENTS_URL);
       var norm = (Array.isArray(raw)?raw:[]).map(normalizeEvent);
-      var upcoming = filterUpcoming(norm).sort(sortByStart).slice(0, CONFIG.MAX_EVENTS);
-      if (!upcoming.length){
+
+      // Filter to window and then cap
+      var windowed = filterUpcomingWindow(norm).sort(sortByStart).slice(0, CONFIG.MAX_EVENTS);
+
+      if (!windowed.length){
         $pages().innerHTML =
-          '<div class="page show fade-in"><div class="event"><div class="event-title">No upcoming events found.</div></div></div>';
+          '<div class="page show fade-in"><div class="event"><div class="event-title">No events in the next '+CONFIG.MONTHS_AHEAD+' months.</div></div></div>';
         return;
       }
-      renderPaged(upcoming);
+
+      renderPaged(windowed);
       startCycle();
     }catch(err){
       console.error('Load error:', err);
