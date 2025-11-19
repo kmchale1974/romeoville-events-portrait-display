@@ -72,15 +72,80 @@
     "location": "Romeoville Aquatic Center"
   },
   {
+    "title": "Village Offices Closed - Martin Luther King Jr. Day",
+    "start": "2026-01-19T14:00:00.000Z",
+    "end": "2026-01-19T22:00:00.000Z"
+  },
+  {
+    "title": "Village Offices Closed - President's Day",
+    "start": "2026-02-16T14:00:00.000Z",
+    "end": "2026-02-16T22:00:00.000Z"
+  },
+  {
+    "title": "Village Offices Closed - Good Friday",
+    "start": "2026-04-03T13:00:00.000Z",
+    "end": "2026-04-03T21:00:00.000Z"
+  },
+  {
     "title": "Drive-Thru Shred Event - 5/16/26",
     "start": "2026-05-16T14:00:00.000Z",
     "end": "2026-05-16T16:00:00.000Z",
     "location": "Romeoville Village Hall Parking Lot"
   },
   {
+    "title": "Village Offices Closed - Memorial Day",
+    "start": "2026-05-25T13:00:00.000Z",
+    "end": "2026-05-25T21:00:00.000Z"
+  },
+  {
+    "title": "Village Offices Closed - Juneteenth Day",
+    "start": "2026-06-19T13:00:00.000Z",
+    "end": "2026-06-19T21:00:00.000Z"
+  },
+  {
+    "title": "Village Offices Closed - Juneteenth Day",
+    "start": "2026-07-03T13:00:00.000Z",
+    "end": "2026-07-03T21:00:00.000Z"
+  },
+  {
+    "title": "Village Offices Closed - Labor Day",
+    "start": "2026-09-07T13:00:00.000Z",
+    "end": "2026-09-07T21:00:00.000Z"
+  },
+  {
     "title": "Drive-Thru Shred Event - 9/19/26",
     "start": "2026-09-19T14:00:00.000Z",
     "end": "2026-09-19T16:00:00.000Z",
     "location": "Romeoville Village Hall Parking Lot"
+  },
+  {
+    "title": "Village Offices Closed - Veterans Day",
+    "start": "2026-11-11T14:00:00.000Z",
+    "end": "2026-11-11T22:00:00.000Z"
+  },
+  {
+    "title": "Village Offices Closed - Thanksgiving",
+    "start": "2026-11-26T14:00:00.000Z",
+    "end": "2026-11-26T22:00:00.000Z"
+  },
+  {
+    "title": "Village Offices Closed - Christmas",
+    "start": "2026-12-24T14:00:00.000Z",
+    "end": "2026-12-24T22:00:00.000Z"
+  },
+  {
+    "title": "Village Offices Closed - Christmas",
+    "start": "2026-12-25T14:00:00.000Z",
+    "end": "2026-12-25T22:00:00.000Z"
+  },
+  {
+    "title": "Village Offices Closed - New Year's",
+    "start": "2026-12-31T14:00:00.000Z",
+    "end": "2026-12-31T22:00:00.000Z"
+  },
+  {
+    "title": "Village Offices Closed - New Year's",
+    "start": "2027-01-01T14:00:00.000Z",
+    "end": "2027-01-01T22:00:00.000Z"
   }
 ]
