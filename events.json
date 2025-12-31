@@ -1,11 +1,6 @@
 [
   {
     "title": "Village Offices Closed - New Year's",
-    "start": "2025-12-31T14:00:00.000Z",
-    "end": "2025-12-31T22:00:00.000Z"
-  },
-  {
-    "title": "Village Offices Closed - New Year's",
     "start": "2026-01-01T14:00:00.000Z",
     "end": "2026-01-01T22:00:00.000Z"
   },
@@ -346,6 +341,12 @@
     "title": "Rockin' the Ville",
     "start": "2026-08-21T00:00:00.000Z",
     "end": "2026-08-21T02:00:00.000Z",
+    "location": "Deer Crossing Park"
+  },
+  {
+    "title": "Rockin' the Ville",
+    "start": "2026-08-28T00:00:00.000Z",
+    "end": "2026-08-28T02:00:00.000Z",
     "location": "Deer Crossing Park"
   }
 ]
