@@ -1,11 +1,5 @@
 [
   {
-    "title": "Village Board Meeting",
-    "start": "2026-02-05T00:00:00.000Z",
-    "end": "2026-02-05T02:00:00.000Z",
-    "location": "Village Board Room"
-  },
-  {
     "title": "Wickedly Enchanted Ball",
     "start": "2026-02-08T00:00:00.000Z",
     "end": "2026-02-08T03:00:00.000Z",
@@ -349,5 +343,11 @@
     "start": "2026-09-02T23:00:00.000Z",
     "end": "2026-09-03T01:00:00.000Z",
     "location": "Village Board Room"
+  },
+  {
+    "title": "Rockin' the Ville",
+    "start": "2026-09-04T00:00:00.000Z",
+    "end": "2026-09-04T02:00:00.000Z",
+    "location": "Deer Crossing Park"
   }
 ]
