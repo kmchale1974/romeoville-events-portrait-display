@@ -1,11 +1,5 @@
 [
   {
-    "title": "Bingo",
-    "start": "2026-02-21T00:00:00.000Z",
-    "end": "2026-02-21T03:00:00.000Z",
-    "location": "Romeoville Athletic and Event Center"
-  },
-  {
     "title": "Early Voting for Romeoville Residents",
     "start": "2026-03-02T15:00:00.000Z",
     "end": "2026-03-06T21:00:00.000Z",
@@ -347,5 +341,11 @@
     "title": "Community Garage Sale",
     "start": "2026-09-12T13:00:00.000Z",
     "end": "2026-09-12T21:00:00.000Z"
+  },
+  {
+    "title": "Route 66 Car Show",
+    "start": "2026-09-12T14:00:00.000Z",
+    "end": "2026-09-12T21:00:00.000Z",
+    "location": "Deer Crossing Park"
   }
 ]
