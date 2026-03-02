@@ -88,6 +88,12 @@
     "location": "Recreation Center"
   },
   {
+    "title": "36th Annual State of the Village Address by Mayor John Noak",
+    "start": "2026-04-28T16:30:00.000Z",
+    "end": "2026-04-28T19:00:00.000Z",
+    "location": "Romeoville Athletic and Event Center"
+  },
+  {
     "title": "Romeo's Bicycle Scavenger Hunt",
     "start": "2026-05-01T00:00:00.000Z",
     "end": "2026-05-31T00:00:00.000Z"
@@ -341,11 +347,5 @@
     "title": "Community Garage Sale",
     "start": "2026-09-12T13:00:00.000Z",
     "end": "2026-09-12T21:00:00.000Z"
-  },
-  {
-    "title": "Route 66 Car Show",
-    "start": "2026-09-12T14:00:00.000Z",
-    "end": "2026-09-12T21:00:00.000Z",
-    "location": "Deer Crossing Park"
   }
 ]
