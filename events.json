@@ -6,16 +6,16 @@
     "location": "Romeoville Village Hall"
   },
   {
-    "title": "Beach Party Gymnastics Meet",
-    "start": "2026-03-13T00:00:00.000Z",
-    "end": "2026-03-15T00:00:00.000Z",
-    "location": "Recreation Center"
-  },
-  {
     "title": "SOLD OUT: Dive In Movie: Lilo & Stich",
     "start": "2026-03-13T22:00:00.000Z",
     "end": "2026-03-14T02:00:00.000Z",
     "location": "Romeoville Aquatic Center"
+  },
+  {
+    "title": "Beach Party Gymnastics Meet",
+    "start": "2026-03-14T00:00:00.000Z",
+    "end": "2026-03-15T00:00:00.000Z",
+    "location": "Recreation Center"
   },
   {
     "title": "Village Board Meeting",
@@ -209,7 +209,7 @@
     "location": "Deer Crossing Park"
   },
   {
-    "title": "Rockin' the Ville",
+    "title": "Rockin' the Ville: Guitarra Azul",
     "start": "2026-07-03T00:00:00.000Z",
     "end": "2026-07-03T02:00:00.000Z",
     "location": "Deer Crossing Park"
@@ -225,7 +225,7 @@
     "end": "2026-07-04T04:59:00.000Z"
   },
   {
-    "title": "Rockin' the Ville",
+    "title": "Rockin' the Ville: Time Gleason Band",
     "start": "2026-07-10T00:00:00.000Z",
     "end": "2026-07-10T02:00:00.000Z",
     "location": "Deer Crossing Park"
@@ -243,7 +243,7 @@
     "location": "Village Board Room"
   },
   {
-    "title": "Rockin' the Ville",
+    "title": "Rockin' the Ville: Anthem",
     "start": "2026-07-17T00:00:00.000Z",
     "end": "2026-07-17T02:00:00.000Z",
     "location": "Deer Crossing Park"
@@ -255,7 +255,7 @@
     "location": "- 729 Murphy Drive"
   },
   {
-    "title": "Rockin' the Ville",
+    "title": "Rockin' the Ville: Rockhouse",
     "start": "2026-07-24T00:00:00.000Z",
     "end": "2026-07-24T02:00:00.000Z",
     "location": "Deer Crossing Park"
@@ -267,7 +267,7 @@
     "location": "Discovery Park"
   },
   {
-    "title": "Rockin' the Ville",
+    "title": "Rockin' the Ville: Too Hype Crew",
     "start": "2026-07-31T00:00:00.000Z",
     "end": "2026-07-31T02:00:00.000Z",
     "location": "Deer Crossing Park"
@@ -297,13 +297,13 @@
     "location": "Village Board Room"
   },
   {
-    "title": "Rockin' the Ville",
+    "title": "Rockin' the Ville: 90s Pop Nation",
     "start": "2026-08-21T00:00:00.000Z",
     "end": "2026-08-21T02:00:00.000Z",
     "location": "Deer Crossing Park"
   },
   {
-    "title": "Rockin' the Ville",
+    "title": "Rockin' the Ville: Miles Nielson & The Rusted Hearts",
     "start": "2026-08-28T00:00:00.000Z",
     "end": "2026-08-28T02:00:00.000Z",
     "location": "Deer Crossing Park"
@@ -315,7 +315,7 @@
     "location": "Village Board Room"
   },
   {
-    "title": "Rockin' the Ville",
+    "title": "Rockin' the Ville: Billy Elton",
     "start": "2026-09-04T00:00:00.000Z",
     "end": "2026-09-04T02:00:00.000Z",
     "location": "Deer Crossing Park"
