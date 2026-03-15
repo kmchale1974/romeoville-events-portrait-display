@@ -1,11 +1,5 @@
 [
   {
-    "title": "Beach Party Gymnastics Meet",
-    "start": "2026-03-14T00:00:00.000Z",
-    "end": "2026-03-15T00:00:00.000Z",
-    "location": "Recreation Center"
-  },
-  {
     "title": "Village Board Meeting",
     "start": "2026-03-18T23:00:00.000Z",
     "end": "2026-03-19T01:00:00.000Z",
@@ -346,5 +340,11 @@
     "start": "2026-09-16T23:00:00.000Z",
     "end": "2026-09-17T01:00:00.000Z",
     "location": "Village Board Room"
+  },
+  {
+    "title": "Drive-Thru Shred Event - 9/19/26",
+    "start": "2026-09-19T14:00:00.000Z",
+    "end": "2026-09-19T16:00:00.000Z",
+    "location": "Romeoville Village Hall Parking Lot"
   }
 ]
