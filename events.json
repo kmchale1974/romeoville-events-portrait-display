@@ -1,11 +1,5 @@
 [
   {
-    "title": "Village Board Meeting",
-    "start": "2026-03-18T23:00:00.000Z",
-    "end": "2026-03-19T01:00:00.000Z",
-    "location": "Village Board Room"
-  },
-  {
     "title": "Aqua Egg Hunt",
     "start": "2026-03-22T17:00:00.000Z",
     "end": "2026-03-23T04:59:00.000Z",
@@ -346,5 +340,10 @@
     "start": "2026-09-19T14:00:00.000Z",
     "end": "2026-09-19T16:00:00.000Z",
     "location": "Romeoville Village Hall Parking Lot"
+  },
+  {
+    "title": "Founder's Day Parade",
+    "start": "2026-09-20T19:00:00.000Z",
+    "end": "2026-09-21T04:59:00.000Z"
   }
 ]
