@@ -1,11 +1,5 @@
 [
   {
-    "title": "Aqua Egg Hunt",
-    "start": "2026-03-22T17:00:00.000Z",
-    "end": "2026-03-23T04:59:00.000Z",
-    "location": "Romeoville Aquatic Center"
-  },
-  {
     "title": "Village Board - Special Meeting - 3/24/26",
     "start": "2026-03-24T21:30:00.000Z",
     "end": "2026-03-24T22:30:00.000Z",
@@ -345,5 +339,11 @@
     "title": "Founder's Day Parade",
     "start": "2026-09-20T19:00:00.000Z",
     "end": "2026-09-21T04:59:00.000Z"
+  },
+  {
+    "title": "Hispanic Heritage Celebration",
+    "start": "2026-09-25T23:00:00.000Z",
+    "end": "2026-09-26T03:00:00.000Z",
+    "location": "Deer Crossing Park"
   }
 ]
