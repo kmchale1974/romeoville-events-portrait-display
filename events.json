@@ -1,11 +1,5 @@
 [
   {
-    "title": "Village Board - Special Meeting - 3/24/26",
-    "start": "2026-03-24T21:30:00.000Z",
-    "end": "2026-03-24T22:30:00.000Z",
-    "location": "Village Board Room"
-  },
-  {
     "title": "Springtide Craft Show",
     "start": "2026-03-28T14:00:00.000Z",
     "end": "2026-03-28T20:00:00.000Z",
@@ -345,5 +339,11 @@
     "start": "2026-09-25T23:00:00.000Z",
     "end": "2026-09-26T03:00:00.000Z",
     "location": "Deer Crossing Park"
+  },
+  {
+    "title": "Autumn Colors Craft Show",
+    "start": "2026-10-03T14:00:00.000Z",
+    "end": "2026-10-03T20:00:00.000Z",
+    "location": "Recreation Center"
   }
 ]
