@@ -1,11 +1,5 @@
 [
   {
-    "title": "Springtide Craft Show",
-    "start": "2026-03-28T14:00:00.000Z",
-    "end": "2026-03-28T20:00:00.000Z",
-    "location": "Recreation Center"
-  },
-  {
     "title": "Hoppy Hound Egg Hunt",
     "start": "2026-03-29T16:00:00.000Z",
     "end": "2026-03-30T04:59:00.000Z",
@@ -345,5 +339,11 @@
     "start": "2026-10-03T14:00:00.000Z",
     "end": "2026-10-03T20:00:00.000Z",
     "location": "Recreation Center"
+  },
+  {
+    "title": "Bark-tober Fest",
+    "start": "2026-10-04T20:00:00.000Z",
+    "end": "2026-10-04T22:00:00.000Z",
+    "location": "Wiggly Field Dog Park"
   }
 ]
