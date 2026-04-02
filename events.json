@@ -1,11 +1,5 @@
 [
   {
-    "title": "Village Board Meeting",
-    "start": "2026-04-01T23:00:00.000Z",
-    "end": "2026-04-02T01:00:00.000Z",
-    "location": "Village Board Room"
-  },
-  {
     "title": "Village Offices Closed - Good Friday",
     "start": "2026-04-03T13:00:00.000Z",
     "end": "2026-04-03T21:00:00.000Z"
@@ -345,5 +339,11 @@
     "start": "2026-10-07T23:00:00.000Z",
     "end": "2026-10-08T01:00:00.000Z",
     "location": "Village Board Room"
+  },
+  {
+    "title": "Fire Prevention Week Open House",
+    "start": "2026-10-10T14:00:00.000Z",
+    "end": "2026-10-10T18:00:00.000Z",
+    "location": "Fire Station No. 1"
   }
 ]
