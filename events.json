@@ -109,6 +109,12 @@
     "location": "Deer Crossing Park"
   },
   {
+    "title": "Bingo Night",
+    "start": "2026-06-12T23:00:00.000Z",
+    "end": "2026-06-13T02:00:00.000Z",
+    "location": "Romeoville Athletic and Event Center"
+  },
+  {
     "title": "Cops & Bobbers",
     "start": "2026-06-13T12:30:00.000Z",
     "end": "2026-06-13T17:00:00.000Z",
@@ -340,11 +346,5 @@
     "start": "2026-10-16T21:30:00.000Z",
     "end": "2026-10-17T01:00:00.000Z",
     "location": "Deer Crossing Park"
-  },
-  {
-    "title": "Village Board Meeting",
-    "start": "2026-10-21T23:00:00.000Z",
-    "end": "2026-10-22T01:00:00.000Z",
-    "location": "Village Board Room"
   }
 ]
