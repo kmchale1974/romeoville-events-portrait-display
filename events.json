@@ -5,12 +5,6 @@
     "end": "2026-05-29T21:30:00.000Z"
   },
   {
-    "title": "Red Carpet Dance Competition",
-    "start": "2026-04-19T00:00:00.000Z",
-    "end": "2026-04-19T00:00:00.000Z",
-    "location": "Recreation Center"
-  },
-  {
     "title": "36th Annual State of the Village Address by Mayor John Noak",
     "start": "2026-04-28T16:30:00.000Z",
     "end": "2026-04-28T19:00:00.000Z",
@@ -346,5 +340,11 @@
     "start": "2026-10-16T21:30:00.000Z",
     "end": "2026-10-17T01:00:00.000Z",
     "location": "Deer Crossing Park"
+  },
+  {
+    "title": "Village Board Meeting",
+    "start": "2026-10-21T23:00:00.000Z",
+    "end": "2026-10-22T01:00:00.000Z",
+    "location": "Village Board Room"
   }
 ]
