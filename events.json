@@ -10,12 +10,6 @@
     "end": "2026-05-31T00:00:00.000Z"
   },
   {
-    "title": "Drive-Thru Shred Event - 5/16/26",
-    "start": "2026-05-16T14:00:00.000Z",
-    "end": "2026-05-16T16:00:00.000Z",
-    "location": "Romeoville Village Hall Parking Lot"
-  },
-  {
     "title": "Public Works Open House & Touch-a-Truck",
     "start": "2026-05-16T14:00:00.000Z",
     "end": "2026-05-16T17:00:00.000Z",
@@ -345,5 +339,10 @@
     "title": "Village Offices Closed - Veterans Day",
     "start": "2026-11-11T14:00:00.000Z",
     "end": "2026-11-11T22:00:00.000Z"
+  },
+  {
+    "title": "Veteran's Day Breakfast & Ceremony",
+    "start": "2026-11-11T15:00:00.000Z",
+    "end": "2026-11-11T17:00:00.000Z"
   }
 ]
