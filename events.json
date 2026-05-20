@@ -10,12 +10,6 @@
     "end": "2026-05-31T00:00:00.000Z"
   },
   {
-    "title": "Park Party: Murphy Park",
-    "start": "2026-05-19T22:00:00.000Z",
-    "end": "2026-05-20T00:00:00.000Z",
-    "location": "Murphy Park"
-  },
-  {
     "title": "Village Board Meeting",
     "start": "2026-05-20T23:00:00.000Z",
     "end": "2026-05-21T01:00:00.000Z",
@@ -344,5 +338,11 @@
     "start": "2026-11-13T23:00:00.000Z",
     "end": "2026-11-14T05:59:00.000Z",
     "location": "Romeoville Aquatic Center"
+  },
+  {
+    "title": "Festival of Lights",
+    "start": "2026-11-18T00:00:00.000Z",
+    "end": "2027-01-03T00:00:00.000Z",
+    "location": "Deer Crossing Park"
   }
 ]
