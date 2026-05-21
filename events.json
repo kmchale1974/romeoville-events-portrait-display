@@ -10,12 +10,6 @@
     "end": "2026-05-31T00:00:00.000Z"
   },
   {
-    "title": "Village Board Meeting",
-    "start": "2026-05-20T23:00:00.000Z",
-    "end": "2026-05-21T01:00:00.000Z",
-    "location": "Village Board Room"
-  },
-  {
     "title": "Village Offices Closed - Memorial Day",
     "start": "2026-05-25T13:00:00.000Z",
     "end": "2026-05-25T21:00:00.000Z"
@@ -343,6 +337,12 @@
     "title": "Festival of Lights",
     "start": "2026-11-18T00:00:00.000Z",
     "end": "2027-01-03T00:00:00.000Z",
+    "location": "Deer Crossing Park"
+  },
+  {
+    "title": "Festival of Lights - Tree Lighting",
+    "start": "2026-11-18T23:00:00.000Z",
+    "end": "2026-11-19T05:59:00.000Z",
     "location": "Deer Crossing Park"
   }
 ]
