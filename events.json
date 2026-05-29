@@ -1,10 +1,5 @@
 [
   {
-    "title": "Hydrant Flushing",
-    "start": "2026-04-06T12:30:00.000Z",
-    "end": "2026-05-29T21:30:00.000Z"
-  },
-  {
     "title": "Romeo's Bicycle Scavenger Hunt",
     "start": "2026-05-01T00:00:00.000Z",
     "end": "2026-05-31T00:00:00.000Z"
@@ -345,5 +340,10 @@
     "start": "2026-11-21T00:00:00.000Z",
     "end": "2026-11-21T03:00:00.000Z",
     "location": "Romeoville Athletic and Event Center"
+  },
+  {
+    "title": "Village Offices Closed - Thanksgiving",
+    "start": "2026-11-26T14:00:00.000Z",
+    "end": "2026-11-26T22:00:00.000Z"
   }
 ]
