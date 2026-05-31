@@ -1,10 +1,5 @@
 [
   {
-    "title": "Romeo's Bicycle Scavenger Hunt",
-    "start": "2026-05-01T00:00:00.000Z",
-    "end": "2026-05-31T00:00:00.000Z"
-  },
-  {
     "title": "Romeo Crossing Community Park - Grand Opening, Ribbon Cutting & Park Party",
     "start": "2026-06-02T22:00:00.000Z",
     "end": "2026-06-03T00:00:00.000Z",
@@ -345,5 +340,10 @@
     "title": "Village Offices Closed - Thanksgiving",
     "start": "2026-11-26T14:00:00.000Z",
     "end": "2026-11-26T22:00:00.000Z"
+  },
+  {
+    "title": "Village Offices Closed - Thanksgiving",
+    "start": "2026-11-27T14:00:00.000Z",
+    "end": "2026-11-27T22:00:00.000Z"
   }
 ]
