@@ -1,11 +1,5 @@
 [
   {
-    "title": "Romeo Crossing Community Park - Grand Opening, Ribbon Cutting & Park Party",
-    "start": "2026-06-02T22:00:00.000Z",
-    "end": "2026-06-03T00:00:00.000Z",
-    "location": "Romeo Crossing Park"
-  },
-  {
     "title": "Village Board Meeting",
     "start": "2026-06-03T23:00:00.000Z",
     "end": "2026-06-04T01:00:00.000Z",
@@ -345,5 +339,11 @@
     "title": "Village Offices Closed - Thanksgiving",
     "start": "2026-11-27T14:00:00.000Z",
     "end": "2026-11-27T22:00:00.000Z"
+  },
+  {
+    "title": "Village Board Meeting",
+    "start": "2026-12-03T00:00:00.000Z",
+    "end": "2026-12-03T02:00:00.000Z",
+    "location": "Village Board Room"
   }
 ]
