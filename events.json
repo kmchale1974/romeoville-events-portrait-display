@@ -1,10 +1,5 @@
 [
   {
-    "title": "Community Garage Sale",
-    "start": "2026-06-06T13:00:00.000Z",
-    "end": "2026-06-06T21:00:00.000Z"
-  },
-  {
     "title": "Spring Clean Up Week",
     "start": "2026-06-08T13:00:00.000Z",
     "end": "2026-06-12T21:00:00.000Z"
@@ -345,5 +340,11 @@
     "start": "2026-12-05T22:00:00.000Z",
     "end": "2026-12-06T02:00:00.000Z",
     "location": "Deer Crossing Park"
+  },
+  {
+    "title": "Fire Department Pancake Breakfast",
+    "start": "2026-12-06T18:00:00.000Z",
+    "end": "2026-12-06T20:00:00.000Z",
+    "location": "Fire Station No. 3"
   }
 ]
