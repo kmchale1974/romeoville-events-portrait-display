@@ -1,10 +1,5 @@
 [
   {
-    "title": "Spring Clean Up Week",
-    "start": "2026-06-08T13:00:00.000Z",
-    "end": "2026-06-12T21:00:00.000Z"
-  },
-  {
     "title": "Bingo Night",
     "start": "2026-06-12T23:00:00.000Z",
     "end": "2026-06-13T02:00:00.000Z",
@@ -346,5 +341,10 @@
     "start": "2026-12-18T23:00:00.000Z",
     "end": "2026-12-19T05:59:00.000Z",
     "location": "Romeoville Aquatic Center"
+  },
+  {
+    "title": "Village Offices Closed - Christmas",
+    "start": "2026-12-24T14:00:00.000Z",
+    "end": "2026-12-24T22:00:00.000Z"
   }
 ]
