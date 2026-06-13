@@ -1,11 +1,5 @@
 [
   {
-    "title": "Cops & Bobbers Fishing Derby - REGISTRATION CLOSED",
-    "start": "2026-06-13T12:30:00.000Z",
-    "end": "2026-06-13T17:00:00.000Z",
-    "location": "Wesglen Park"
-  },
-  {
     "title": "Park Party: Wesglen Park",
     "start": "2026-06-16T22:00:00.000Z",
     "end": "2026-06-17T00:00:00.000Z",
@@ -345,5 +339,10 @@
     "title": "Village Offices Closed - Christmas",
     "start": "2026-12-25T14:00:00.000Z",
     "end": "2026-12-25T22:00:00.000Z"
+  },
+  {
+    "title": "Village Offices Closed - New Year's",
+    "start": "2026-12-31T14:00:00.000Z",
+    "end": "2026-12-31T22:00:00.000Z"
   }
 ]
