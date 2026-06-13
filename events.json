@@ -1,11 +1,5 @@
 [
   {
-    "title": "Bingo Night",
-    "start": "2026-06-12T23:00:00.000Z",
-    "end": "2026-06-13T02:00:00.000Z",
-    "location": "Romeoville Athletic and Event Center"
-  },
-  {
     "title": "Cops & Bobbers Fishing Derby - REGISTRATION CLOSED",
     "start": "2026-06-13T12:30:00.000Z",
     "end": "2026-06-13T17:00:00.000Z",
@@ -346,5 +340,10 @@
     "title": "Village Offices Closed - Christmas",
     "start": "2026-12-24T14:00:00.000Z",
     "end": "2026-12-24T22:00:00.000Z"
+  },
+  {
+    "title": "Village Offices Closed - Christmas",
+    "start": "2026-12-25T14:00:00.000Z",
+    "end": "2026-12-25T22:00:00.000Z"
   }
 ]
