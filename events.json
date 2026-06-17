@@ -1,11 +1,5 @@
 [
   {
-    "title": "Park Party: Wesglen Park",
-    "start": "2026-06-16T22:00:00.000Z",
-    "end": "2026-06-17T00:00:00.000Z",
-    "location": "Wesglen Park"
-  },
-  {
     "title": "Village Board Meeting",
     "start": "2026-06-17T23:00:00.000Z",
     "end": "2026-06-18T01:00:00.000Z",
@@ -344,5 +338,10 @@
     "title": "Village Offices Closed - New Year's",
     "start": "2026-12-31T14:00:00.000Z",
     "end": "2026-12-31T22:00:00.000Z"
+  },
+  {
+    "title": "Village Offices Closed - New Year's",
+    "start": "2027-01-01T14:00:00.000Z",
+    "end": "2027-01-01T22:00:00.000Z"
   }
 ]
